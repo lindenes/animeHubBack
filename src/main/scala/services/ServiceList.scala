@@ -18,14 +18,16 @@ object ServiceList {
 
   def testMethod(): String = "Test Working"
 
-  def registration(req: Request[IO]): IO[Json] =
+  def doRegistration(req: Request[IO]): IO[Json] =
     req.as[User].flatMap { user =>
-      val valid = validation.checkValidation(user)
-      val regMessage = validation.doRegistration(user)
-        IO.pure(
-          json"""{"passwordError": ${valid.passwordError}, "loginError": ${valid.loginError}}""".deepMerge(regMessage)
+      val validationInfo = validation.checkValidation(user)
+      val regInfo = Registration.addNewUser(user, validationInfo._2)
+      
+      IO.pure(
+        json"""{"passwordError": ${validationInfo._1.passwordError}, "loginError": ${validationInfo._1.loginError}}""".deepMerge(regInfo)
 
-        )
+      )
+
     }
 }
 

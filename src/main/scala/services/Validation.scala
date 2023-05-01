@@ -9,8 +9,7 @@ import java.sql.DriverManager
 class Validation {
   case class RegUser(id: Int, login: String, password: String, age: Int, photo: Option[String])
   case class validationInfo(passwordError:List[String], loginError:List[String])
-
-  def checkValidation(user: User): validationInfo = {
+  def checkValidation(user: User): (validationInfo, Boolean) = {
     
     val passwordCheck = passwordChecker(user)
     val loginChek = loginCheker(user)
@@ -19,8 +18,12 @@ class Validation {
       passwordCheck._1,
       loginChek._1
     )
-    
-    validation
+    val successful = if(passwordCheck._2 && loginChek._2){
+      true
+    }else{
+      false
+    }
+    (validation, successful)
   }
 
     def passwordChecker(user:User): (List[String], Boolean) =
@@ -51,34 +54,34 @@ class Validation {
       (errorList, true)
     else
       (errorList, false)
-  def doRegistration(user:User): Json = {
-
-    var objectList = List.empty[RegUser]
-    val url = "jdbc:mysql://127.0.0.1/animeHub"
-    val username = "root"
-    val password = ""
-    Class.forName("com.mysql.cj.jdbc.Driver")
-    val connection = DriverManager.getConnection(url, username, password)
-
-    // Создаем объект Statement и выполняем запрос
-    val statement = connection.createStatement()
-    val resultSet = statement.executeQuery("SELECT id, login, password, age, photo FROM users")
-
-    while (resultSet.next) {
-
-      val item:RegUser = RegUser(
-          resultSet.getInt("id"),
-          resultSet.getString("login"),
-          resultSet.getString("password"),
-          resultSet.getInt("age"),
-          Some(resultSet.getString("photo"))
-      )
-      objectList = objectList :+ item
-    }
-    regMessage(objectList)
-    }
-  def regMessage(listPeople:List[RegUser]):Json={
-    json"""{"login": ${listPeople.head.login}, "password":  ${listPeople.head.password}}"""
-  }
+//  def doRegistration(user:User): Json = {
+//
+//    var objectList = List.empty[RegUser]
+//    val url = "jdbc:mysql://127.0.0.1/animeHub"
+//    val username = "root"
+//    val password = ""
+//    Class.forName("com.mysql.cj.jdbc.Driver")
+//    val connection = DriverManager.getConnection(url, username, password)
+//
+//    // Создаем объект Statement и выполняем запрос
+//    val statement = connection.createStatement()
+//    val resultSet = statement.executeQuery("SELECT id, login, password, age, photo FROM users")
+//
+//    while (resultSet.next) {
+//
+//      val item:RegUser = RegUser(
+//          resultSet.getInt("id"),
+//          resultSet.getString("login"),
+//          resultSet.getString("password"),
+//          resultSet.getInt("age"),
+//          Some(resultSet.getString("photo"))
+//      )
+//      objectList = objectList :+ item
+//    }
+//    regMessage(objectList)
+//    }
+//  def regMessage(listPeople:List[RegUser]):Json={
+//    json"""{"login": ${listPeople.head.login}, "password":  ${listPeople.head.password}}"""
+//  }
 
 }

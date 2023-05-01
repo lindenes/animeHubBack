@@ -25,7 +25,7 @@ object Main extends IOApp {
       .default[IO]
       .withHost(ipv4"0.0.0.0")
       .withPort(port"5000")
-      .withHttpApp( cors (RoutesList.routes.orNotFound) )
+      .withHttpApp( cors (RoutesList.getRouteList.orNotFound) )
       .build
       .use(_ => IO.never)
       .as(ExitCode.Success)
