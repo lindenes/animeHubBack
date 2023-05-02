@@ -7,18 +7,22 @@ import services.ServiceList.User
 import java.sql.DriverManager
 
 class Validation {
-  case class RegUser(id: Int, login: String, password: String, age: Int, photo: Option[String])
-  case class validationInfo(passwordError:List[String], loginError:List[String])
+  //case class RegUser(id: Int, login: String, password: String, age: Int, photo: Option[String])
+  case class validationInfo(passwordError:List[String], loginError:List[String], ageError:List[String], mailError:List[String])
   def checkValidation(user: User): (validationInfo, Boolean) = {
-    
+ 
     val passwordCheck = passwordChecker(user)
-    val loginChek = loginCheker(user)
+    val loginCheck = loginChecker(user)
+    val ageCheck = ageChecker(user)
+    val mailCheck = mailChecker(user)
     
     val validation = validationInfo(
       passwordCheck._1,
-      loginChek._1
+      loginCheck._1,
+      ageCheck._1,
+      mailCheck._1
     )
-    val successful = if(passwordCheck._2 && loginChek._2){
+    val successful = if(passwordCheck._2 && loginCheck._2 && ageCheck._2 && mailCheck._2){
       true
     }else{
       false
@@ -44,7 +48,7 @@ class Validation {
       else
         (errorList, false)
   
-  def loginCheker(user:User): (List[String], Boolean)=
+  def loginChecker(user:User): (List[String], Boolean)=
     var errorList = List.empty[String]
     
     if(user.login.length < 6)
@@ -54,34 +58,32 @@ class Validation {
       (errorList, true)
     else
       (errorList, false)
-//  def doRegistration(user:User): Json = {
-//
-//    var objectList = List.empty[RegUser]
-//    val url = "jdbc:mysql://127.0.0.1/animeHub"
-//    val username = "root"
-//    val password = ""
-//    Class.forName("com.mysql.cj.jdbc.Driver")
-//    val connection = DriverManager.getConnection(url, username, password)
-//
-//    // Создаем объект Statement и выполняем запрос
-//    val statement = connection.createStatement()
-//    val resultSet = statement.executeQuery("SELECT id, login, password, age, photo FROM users")
-//
-//    while (resultSet.next) {
-//
-//      val item:RegUser = RegUser(
-//          resultSet.getInt("id"),
-//          resultSet.getString("login"),
-//          resultSet.getString("password"),
-//          resultSet.getInt("age"),
-//          Some(resultSet.getString("photo"))
-//      )
-//      objectList = objectList :+ item
-//    }
-//    regMessage(objectList)
-//    }
-//  def regMessage(listPeople:List[RegUser]):Json={
-//    json"""{"login": ${listPeople.head.login}, "password":  ${listPeople.head.password}}"""
-//  }
+  def ageChecker(user:User): (List[String], Boolean)=
+
+    var errorList = List.empty[String]
+
+    if( user.age.getOrElse(0) >= 100 || user.age.getOrElse(0) <= 7 ){
+      errorList= errorList :+ "Ваш возрост не может быть больше 100 или меньше 7"
+    }
+
+    if(errorList.isEmpty){
+      (errorList, true)
+    }
+    else{
+      (errorList, false)
+    }
+
+  def mailChecker(user:User):(List[String], Boolean)=
+    var errorList = List.empty[String]
+
+    val emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$".r
+    emailRegex.findFirstMatchIn(user.email) match {
+      case Some(_) =>
+        (errorList,true)
+      case None =>
+        errorList = errorList :+ "Вы ввели некоректный email"
+        (errorList, false)
+    }
+
 
 }

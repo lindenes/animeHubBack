@@ -21,13 +21,6 @@ object RoutesList {
       case req@POST -> Root / "registration" =>
         Ok( ServiceList.doRegistration(req) )
     }
-
-    val authRout:HttpRoutes[IO] = HttpRoutes.of[IO]{
-      case req@POST -> Root / "authorization" =>
-        Ok()
-    }
-     val routList = routes.combineK(authRout)
-
-     routList
+    routes
 
 }
