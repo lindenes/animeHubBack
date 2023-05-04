@@ -22,11 +22,8 @@ class Validation {
       ageCheck._1,
       mailCheck._1
     )
-    val successful = if(passwordCheck._2 && loginCheck._2 && ageCheck._2 && mailCheck._2){
-      true
-    }else{
-      false
-    }
+    val successful = passwordCheck._2 && loginCheck._2 && ageCheck._2 && mailCheck._2
+
     ( json"""{"passwordError": ${validation.passwordError}, "loginError": ${validation.loginError}, 
           "mailError": ${validation.mailError}, "ageError":  ${validation.ageError}}""", successful )
   }
