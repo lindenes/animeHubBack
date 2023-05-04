@@ -18,9 +18,9 @@ object RoutesList {
     val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
       case GET -> Root / "test" =>
         Ok(ServiceList.testMethod())
-      case req@POST -> Root / "registration" =>
+      case req@POST -> Root / "signup" =>
         Ok( ServiceList.doRegistration(req) )
-      case req@POST -> Root / "authorization" =>
+      case req@POST -> Root / "login" =>
         Ok ( ServiceList.doAuthorization(req) )
     }
     routes
