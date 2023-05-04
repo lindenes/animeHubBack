@@ -20,6 +20,8 @@ object RoutesList {
         Ok(ServiceList.testMethod())
       case req@POST -> Root / "registration" =>
         Ok( ServiceList.doRegistration(req) )
+      case req@POST -> Root / "authorization" =>
+        Ok ( ServiceList.doAuthorization(req) )
     }
     routes
 

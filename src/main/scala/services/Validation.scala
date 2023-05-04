@@ -9,7 +9,7 @@ import java.sql.DriverManager
 class Validation {
   //case class RegUser(id: Int, login: String, password: String, age: Int, photo: Option[String])
   case class validationInfo(passwordError:List[String], loginError:List[String], ageError:List[String], mailError:List[String])
-  def checkValidation(user: User): (validationInfo, Boolean) = {
+  def checkValidation(user: User): (Json, Boolean) = {
  
     val passwordCheck = passwordChecker(user)
     val loginCheck = loginChecker(user)
@@ -27,7 +27,8 @@ class Validation {
     }else{
       false
     }
-    (validation, successful)
+    ( json"""{"passwordError": ${validation.passwordError}, "loginError": ${validation.loginError}, 
+          "mailError": ${validation.mailError}, "ageError":  ${validation.ageError}}""", successful )
   }
 
     def passwordChecker(user:User): (List[String], Boolean) =

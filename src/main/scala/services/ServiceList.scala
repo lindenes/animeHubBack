@@ -27,9 +27,21 @@ object ServiceList {
       val validationInfo = validation.checkValidation(user)
       val regInfo = Registration.addNewUser(user, validationInfo._2)
       IO.pure(
-        json"""{"passwordError": ${validationInfo._1.passwordError}, "loginError": ${validationInfo._1.loginError}, 
-              "mailError": ${validationInfo._1.mailError}, "ageError":  ${validationInfo._1.ageError}}""".deepMerge(regInfo))
+        validationInfo._1.deepMerge(regInfo)
+      )
     }
+
+  def doAuthorization(req: Request[IO] ): IO[Json] =
+    req.as[Json].flatMap { json =>
+      val login = json.hcursor.get[String]("login").toOption.getOrElse("")
+      val password = json.hcursor.get[String]("password").toOption.getOrElse("") 
+      
+      val auth = Authorization.getAuth(login, password)
+      IO.pure(
+        auth
+      )
+    }
+    
 }
 
 
