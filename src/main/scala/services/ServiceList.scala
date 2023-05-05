@@ -8,6 +8,8 @@ import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.jsonOf
 import org.http4s.{Request, UrlForm}
 import services.Validation
+import data.sqlquery.{PersonQuery, PostQuery}
+import io.circe.syntax._
 object ServiceList {
   case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photoPath:String)
 
@@ -44,6 +46,7 @@ object ServiceList {
         auth
       )
     }
+  def getPosts: IO[Json] = PostQuery.getPostList
     
 }
 

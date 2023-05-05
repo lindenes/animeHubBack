@@ -19,7 +19,7 @@ object Authorization {
     if checkLogin._2 then
       if checkPass._2 then
         PersonQuery.getPersonInfo(login) match
-          case Left(value) => json"""{"personId": ${value.id}, "personLogin":  ${value.login}, "createdData": ${value.created},
+          case Left(value) => json"""{"personId": ${value.id}, "personLogin":  ${value.login}, "createdData": ${value.createdAt},
               "personEmail":${value.email}, "personAge": ${value.age}, "personAvatar": ${value.avatarPath}, "personRole": ${value.role}  }"""
           case Right(value) => json"""{"getInfoError":  $value }"""
       else

@@ -22,7 +22,8 @@ object RoutesList {
         Ok( ServiceList.doRegistration(req) )
       case req@POST -> Root / "login" =>
         Ok ( ServiceList.doAuthorization(req) )
+      case GET -> Root / "posts" =>
+        Ok ( ServiceList.getPosts )
     }
     routes
-
 }

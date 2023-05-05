@@ -13,7 +13,9 @@ libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-circe" % http4sVersion,
   "io.circe" %% "circe-generic" % "0.14.5",
   "io.circe" %% "circe-literal" % "0.14.5",
-  "mysql" % "mysql-connector-java" % "8.0.32"
+  "mysql" % "mysql-connector-java" % "8.0.32",
+  "org.tpolecat" %% "doobie-core" % "1.0.0-M5",
+  "org.tpolecat" %% "doobie-hikari" % "1.0.0-M5"
 
 )
 
