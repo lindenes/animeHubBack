@@ -5,14 +5,23 @@ import io.circe.literal.json
 
 import java.security.MessageDigest
 import java.sql.{DriverManager, ResultSet, SQLException}
+import data.sqlquery
+import data.sqlquery.PersonQuery
+import data.sqlquery.PersonQuery.UserInfo
 object Authorization {
 
   def getAuth(login:String, password:String):Json =
+
     val checkPass = checkPassword(login, passHash(password) )
+
     val checkLogin = loginCheck(login)
+
     if(checkLogin._2){
       if (checkPass._2) {
-        json"""{"personInfo":  "а откуда информейшн"}"""
+        PersonQuery.getPersonInfo(login) match
+          case Left(value) => json"""{"personId": ${value.id}, "personLogin":  ${value.login}, "createdData": ${value.created},
+              "personEmail":${value.email}, "personAge": ${value.age}, "personAvatar": ${value.avatarPath}, "personRole": ${value.role}  }"""
+          case Right(value) => json"""{"getInfoError":  $value }"""
       } else {
         json"""{"authError": ${checkPass._1} }"""
       }
