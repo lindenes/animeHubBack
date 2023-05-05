@@ -16,18 +16,17 @@ object Authorization {
 
     val checkLogin = loginCheck(login)
 
-    if(checkLogin._2){
-      if (checkPass._2) {
+    if checkLogin._2 then
+      if checkPass._2 then
         PersonQuery.getPersonInfo(login) match
           case Left(value) => json"""{"personId": ${value.id}, "personLogin":  ${value.login}, "createdData": ${value.created},
               "personEmail":${value.email}, "personAge": ${value.age}, "personAvatar": ${value.avatarPath}, "personRole": ${value.role}  }"""
           case Right(value) => json"""{"getInfoError":  $value }"""
-      } else {
+      else
         json"""{"authError": ${checkPass._1} }"""
-      }
-    }else{
+    else
       json"""{"authError": ${checkLogin._1}}"""
-    }
+
   
   def loginCheck(login:String):(String, Boolean) =
     try {

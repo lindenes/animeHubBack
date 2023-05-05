@@ -10,7 +10,7 @@ import org.http4s.circe.jsonOf
 import org.http4s.{Request, UrlForm}
 import services.Validation
 object ServiceList {
-  case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String)
+  case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photoPath:String)
 
   val validation = new Validation()
   def testMethod(): String = "Test Working"
@@ -22,7 +22,9 @@ object ServiceList {
       val passwordRepeat = json.hcursor.get[String]("passwordRepeat").toOption.getOrElse("")
       val email = json.hcursor.get[String]("email").toOption.getOrElse("")
       val age = json.hcursor.get[Int]("age").toOption.getOrElse(0)
-      val user = User(login, password, passwordRepeat, Some(age), email)
+      val photoBytes = json.hcursor.get[Array[Byte]]("photo").getOrElse(Array.emptyByteArray)
+      val photoPath = PhotoService.uploadPhoto(photoBytes)
+      val user = User(login, password, passwordRepeat, Some(age), email, photoPath)
 
       val validationInfo = validation.checkValidation(user)
       val regInfo = Registration.addNewUser(user, validationInfo._2)
