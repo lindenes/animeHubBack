@@ -19,14 +19,18 @@ object PostQuery{
 
     getPostListDB.flatMap{
       case Left(value) => IO.pure(
-        json"""{"postInfo":  ${value.map(elem => json"""{ "id": ${elem.id}, "title": ${elem.title}, "description": ${elem.description} }""")}}"""
+        json"""{"postInfo":  ${value.map(elem =>
+          json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
+                "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
+                  "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
+                    "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating} }""")}}"""
       )
       case Right(value) => IO.pure(
         json"""{"postError": ${value}}"""
       )
 
     }
- private def getPostListDB: IO[Either[List[Post], String]] = {
+ private def getPostListDB: IO[Either[List[Post], String]] =
 
    val xa = Transactor.fromDriverManager[IO](
      "com.mysql.cj.jdbc.Driver",
@@ -41,7 +45,29 @@ object PostQuery{
      .transact(xa)
      .map(posts => Left(posts))
      .handleErrorWith(e => IO(Right("Ошибка вывода постов")))
- }
+
+ def getPostById(id:Int):IO[Json] =
+
+   val xa = Transactor.fromDriverManager[IO](
+     "com.mysql.cj.jdbc.Driver",
+     "jdbc:mysql://127.0.0.1/animeHub",
+     "root",
+     "",
+   )
+
+   sql"SELECT * FROM post WHERE id = $id"
+     .query[Post]
+     .option
+     .transact(xa)
+     .map {
+       case Some(post:Post) => json"""{ "id": ${post.id},"createdAt": ${post.createdAt}, "title": ${post.title},
+               "description": ${post.description},"year": ${post.year}, "imagePath": ${post.imagePath},
+                 "videoPath": ${post.videoPath},"episodeCount": ${post.episodeCount}, "episodeDuration":${post.episodeDuration},
+                   "userId": ${post.userId}, "typeId": ${post.typeId}, "rating": ${post.rating} }"""
+
+       case None => json"""{"postGetError": "Такого поста не существует"}"""
+
+     }
 
 //  def getPostListJDBCAsync(): IO[Either[Post, String]] =
 //    val url = "jdbc:mysql://127.0.0.1/animeHub"

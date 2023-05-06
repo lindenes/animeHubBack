@@ -10,6 +10,7 @@ import org.http4s.{Request, UrlForm}
 import services.Validation
 import data.sqlquery.{PersonQuery, PostQuery}
 import io.circe.syntax._
+import java.util.Base64
 object ServiceList {
   case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photoPath:String)
 
@@ -24,8 +25,8 @@ object ServiceList {
       val email = json.hcursor.get[String]("email").toOption.getOrElse("")
       val age = json.hcursor.get[Int]("age").toOption.getOrElse(0)
 
-      val photoBytes = json.hcursor.get[Array[Byte]]("photo").getOrElse(Array.emptyByteArray)
-      val photoPath = PhotoService.uploadPhoto(photoBytes)
+      val photo = json.hcursor.get[String]("photo").toOption.getOrElse("")
+      val photoPath = PhotoService.uploadPhoto( Base64.getDecoder.decode(photo) )
 
       val user = User(login, password, passwordRepeat, Some(age), email, photoPath)
 
@@ -47,6 +48,9 @@ object ServiceList {
       )
     }
   def getPosts: IO[Json] = PostQuery.getPostList
+
+  def getPost(id:Int): IO[Json] = PostQuery.getPostById(id)
+
     
 }
 

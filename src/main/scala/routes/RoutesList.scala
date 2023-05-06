@@ -24,6 +24,8 @@ object RoutesList {
         Ok ( ServiceList.doAuthorization(req) )
       case GET -> Root / "posts" =>
         Ok ( ServiceList.getPosts )
+      case GET -> Root / "post" / IntVar(id) =>
+        Ok( ServiceList.getPost(id) )
     }
     routes
 }
