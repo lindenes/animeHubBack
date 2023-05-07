@@ -3,9 +3,10 @@ package services
 import services.ServiceList.User
 import io.circe.Json
 import io.circe.literal.json
-
+import cats.effect.*
 import java.security.MessageDigest
 import java.sql.{Connection, DriverManager, SQLException}
+import java.util.Base64
 object Registration {
     def addNewUser(user:User, validationSuccess: Boolean): Json = {
 
@@ -82,13 +83,18 @@ object Registration {
         val connection = DriverManager.getConnection(url, username, password)
         val sql = "INSERT INTO user (login, email, password_hash, age, avatar_path, role) VALUES (?, ?, ?, ? ,?, ?)"
         val preparedStatement = connection.prepareStatement(sql)
+        
+        var photoPath = ""
+        PhotoService.uploadAvatarPhoto( Base64.getDecoder.decode(user.photo), user.login ).map(
+          photo => photoPath = photo
+        )
 
         preparedStatement.setString(1, user.login)
         preparedStatement.setString(2, user.email)
         preparedStatement.setString(3, passHash(user.password) )
         preparedStatement.setInt(4, user.age.getOrElse(0) )
-        preparedStatement.setString(5, "" )
-        preparedStatement.setInt(6, 0)
+        preparedStatement.setString(5, photoPath)
+        preparedStatement.setInt(6, 2)
 
         preparedStatement.executeUpdate()
 
