@@ -1,18 +1,23 @@
 package services
 
-import cats.effect.IO
+import cats.effect.{IO, IOApp, Resource}
 
 import java.awt.image.BufferedImage
-import java.io.{ByteArrayInputStream, File, FileOutputStream}
-import java.nio.file.{Files, Paths}
+import java.io.{ByteArrayInputStream, File, FileOutputStream, IOException}
+import java.nio.file.{FileSystems, Files, InvalidPathException, Paths}
 import javax.imageio.ImageIO
 import java.nio.file.StandardOpenOption.{CREATE, TRUNCATE_EXISTING}
+import scala.jdk.CollectionConverters
 object PhotoService {
-  def uploadAvatarPhoto(photoByte: Array[Byte], login:String ): IO[String] =
-    for{
-      pathForPhoto <- IO.delay(Paths.get("C:/animeHub/avatarPhoto") )
-      _ <- IO.delay( if (!Files.exists(pathForPhoto)) Files.createDirectory(pathForPhoto) )
-      filePath = new File("C:/animeHub/avatarPhoto" + login )
-      _ <- IO.blocking( Files.write(filePath.toPath, photoByte, CREATE, TRUNCATE_EXISTING) )
-    }yield  filePath.getAbsolutePath
+  def uploadAvatarPhoto(photoByte: Array[Byte], login:String ): String =
+    val rootPath = FileSystems.getDefault.getRootDirectories.iterator.next()
+    val avatarPath = rootPath.resolve("animeHub\\avatarPhoto")
+
+    Files.createDirectories(avatarPath)
+
+    val outputStream = new FileOutputStream(new File( s"$avatarPath\\$login.jpg"))
+
+    outputStream.write(photoByte)
+    outputStream.close()
+    s"$avatarPath\\$login.jpg"
 }

@@ -84,10 +84,7 @@ object Registration {
         val sql = "INSERT INTO user (login, email, password_hash, age, avatar_path, role) VALUES (?, ?, ?, ? ,?, ?)"
         val preparedStatement = connection.prepareStatement(sql)
         
-        var photoPath = ""
-        PhotoService.uploadAvatarPhoto( Base64.getDecoder.decode(user.photo), user.login ).map(
-          photo => photoPath = photo
-        )
+        val photoPath = PhotoService.uploadAvatarPhoto( Base64.getDecoder.decode(user.photo), user.login )
 
         preparedStatement.setString(1, user.login)
         preparedStatement.setString(2, user.email)
