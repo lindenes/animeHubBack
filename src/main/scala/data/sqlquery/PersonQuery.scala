@@ -14,7 +14,7 @@ object PersonQuery {
       val connection = DriverManager.getConnection(url, username, password)
 
       // Создаем объект Statement и выполняем запрос
-      val query = "SELECT id, login FROM user WHERE login = ?"
+      val query = "SELECT * FROM user WHERE login = ?"
       val preparedStatement = connection.prepareStatement(query)
       preparedStatement.setString(1, login)
       val resultSet = preparedStatement.executeQuery()
