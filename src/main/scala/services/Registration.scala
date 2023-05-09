@@ -92,6 +92,7 @@ object Registration {
         preparedStatement.setInt(4, user.age.getOrElse(0) )
         preparedStatement.setString(5, photoPath)
         preparedStatement.setInt(6, 2)
+        preparedStatement.setInt(7, 0)
 
         preparedStatement.executeUpdate()
 

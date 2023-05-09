@@ -26,6 +26,8 @@ object RoutesList {
         Ok ( ServiceList.getPosts )
       case GET -> Root / "post" / IntVar(id) =>
         Ok( ServiceList.getPost(id) )
+      case req@POST -> Root / "sortedPosts" =>
+        Ok( ServiceList.getSortedPosts(req) )
     }
     routes
 }

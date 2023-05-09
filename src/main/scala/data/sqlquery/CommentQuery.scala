@@ -18,7 +18,7 @@ object CommentQuery {
       "root",
       "",
     )
-    sql"SELECT comment.*, user.login FROM comment INNER JOIN user ON comment.user_id = user.id WHERE comment.post_id = 1;"
+    sql"SELECT comment.*, user.login FROM comment INNER JOIN user ON comment.user_id = user.id WHERE comment.post_id = $postId;"
       .query[Comment]
       .to[List]
       .transact(xa)
@@ -28,6 +28,9 @@ object CommentQuery {
             json"""{"commentId": ${elem.id}, "createdAt":  ${elem.createdAt}, "text":  ${elem.text}, "userId": ${elem.userId}, "postId":  ${elem.postId}, "userLogin":  ${elem.login}}"""
         }
       }}"""
+      )
+      .handleErrorWith(
+        e => IO.pure(json"""{"getCommentError":"Ошибка вывода комментариев", "details": ${e.toString}}""")
       )
 
 

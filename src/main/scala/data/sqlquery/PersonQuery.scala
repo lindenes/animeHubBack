@@ -4,7 +4,7 @@ import java.sql.{DriverManager, SQLException}
 
 object PersonQuery {
 
-  case class UserInfo(id:Int, createdAt:String, login:String, email:String, age:Int, avatarPath:String, role:Int)
+  case class UserInfo(id:Int, createdAt:String, login:String, email:String, age:Int, avatarPath:String, role:Int, xxxContent:Int)
   def getPersonInfo(login:String):Either[UserInfo, String] =
     try {
       val url = "jdbc:mysql://127.0.0.1/animeHub"
@@ -28,7 +28,8 @@ object PersonQuery {
             resultSet.getString("email"),
             resultSet.getInt("age"),
             resultSet.getString("avatar_path"),
-            resultSet.getInt("role")
+            resultSet.getInt("role"),
+            resultSet.getInt("xxx_content")
           )
         )
       }else{
