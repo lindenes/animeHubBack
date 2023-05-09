@@ -8,8 +8,8 @@ import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.jsonOf
 import org.http4s.{Request, UrlForm}
 import services.Validation
-import data.sqlquery.{PersonQuery, PostQuery}
-import io.circe.syntax._
+import data.sqlquery.{CommentQuery, PersonQuery, PostQuery}
+import io.circe.syntax.*
 object ServiceList {
   case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photo:String)
 
@@ -46,7 +46,11 @@ object ServiceList {
     }
   def getPosts: IO[Json] = PostQuery.getPostList
 
-  def getPost(id:Int): IO[Json] = PostQuery.getPostById(id)
+  def getPost(id:Int): IO[Json] = PostQuery.getPostById(id).flatMap( jsonPost =>
+    CommentQuery.getCommentList(id).map(jsonComments =>
+      json"""{"Post": $jsonPost}""".deepMerge(jsonComments)
+    )
+  )
 
     
 }
