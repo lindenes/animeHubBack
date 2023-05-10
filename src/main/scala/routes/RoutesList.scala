@@ -11,6 +11,7 @@ import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.io._
 import cats.implicits._
+import cats.syntax.foldable._
 object RoutesList {
 
   def getRouteList:HttpRoutes[IO] =
@@ -28,6 +29,8 @@ object RoutesList {
         Ok( ServiceList.getPost(id) )
       case req@POST -> Root / "sortedPosts" =>
         Ok( ServiceList.getSortedPosts(req) )
+      case GET -> Root / "filters" =>
+        Ok(ServiceList.getFilters)
     }
     routes
 }

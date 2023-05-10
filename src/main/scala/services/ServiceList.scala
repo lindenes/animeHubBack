@@ -8,7 +8,7 @@ import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.jsonOf
 import org.http4s.{Request, UrlForm}
 import services.Validation
-import data.sqlquery.{CommentQuery, PersonQuery, PostQuery}
+import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PostQuery}
 import io.circe.syntax.*
 object ServiceList {
   case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photo:String)
@@ -44,7 +44,7 @@ object ServiceList {
         auth
       )
     }
-  def getPosts: IO[Json] = PostQuery.getPostList
+  def getPosts: IO[Json] = PostQuery.getPostList.map(posts => Json.arr(posts: _*))
 
   def getPost(id:Int): IO[Json] = PostQuery.getPostById(id).flatMap( jsonPost =>
     CommentQuery.getCommentList(id).map(jsonComments =>
@@ -59,9 +59,11 @@ object ServiceList {
       val sort = json.hcursor.get[Int]("filterType").toOption.getOrElse(0)
       val sortBy = json.hcursor.get[Int]("filterType").toOption.getOrElse(0)
 
-      PostQuery.getPostList(filterType, filterGenre, sort ,sortBy)
+      PostQuery.getPostList(filterType, filterGenre, sort ,sortBy).map(posts => Json.arr(posts: _*))
 
     }
+    
+  def getFilters:IO[Json] = FiltersQuery.getFilterList
 
     
 }
