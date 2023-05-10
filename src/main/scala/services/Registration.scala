@@ -81,7 +81,7 @@ object Registration {
         val password = ""
         Class.forName("com.mysql.cj.jdbc.Driver")
         val connection = DriverManager.getConnection(url, username, password)
-        val sql = "INSERT INTO user (login, email, password_hash, age, avatar_path, role) VALUES (?, ?, ?, ? ,?, ?)"
+        val sql = "INSERT INTO user (login, email, password_hash, age, avatar_path, role, xxx_content) VALUES (?, ?, ?, ? ,?, ?, ?)"
         val preparedStatement = connection.prepareStatement(sql)
         
         val photoPath = PhotoService.uploadAvatarPhoto( Base64.getDecoder.decode(user.photo), user.login )
