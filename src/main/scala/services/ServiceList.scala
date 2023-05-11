@@ -62,10 +62,15 @@ object ServiceList {
       PostQuery.getPostList(filterType, filterGenre, sort ,sortBy).map(posts => Json.arr(posts: _*))
 
     }
-    
   def getFilters:IO[Json] = FiltersQuery.getFilterList
 
-    
+  def findPost(req: Request[IO] ): IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val searchTitle = json.hcursor.get[String]("search").toOption.getOrElse("")
+      
+      PostQuery.getPostList(searchTitle).map(posts => Json.arr(posts: _*))
+    }
+
 }
 
 

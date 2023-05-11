@@ -118,6 +118,32 @@ object PostQuery{
      sql"WHERE genre_id = $filterGenre"
    else sql""
 
+
+  def getPostList(titleSearchValue: String): IO[List[Json]] =
+
+    val xa = Transactor.fromDriverManager[IO](
+      "com.mysql.cj.jdbc.Driver",
+      "jdbc:mysql://127.0.0.1/animeHub",
+      "root",
+      "",
+    )
+
+    sql"SELECT * FROM post WHERE `title` LIKE {$titleSearchValue + "%"} LIMIT 10"
+      .query[Post]
+      .to[List]
+      .transact(xa)
+      .map { posts =>
+        posts.map(elem =>
+          json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
+                    "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
+                      "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
+                        "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
+
+        )
+      }
+      .handleErrorWith(e => IO.pure( List( json"""{"errorSearch":  "Ошибка поиска"}""") ) )
+
+
 //  def getPostListJDBCAsync(): IO[Either[Post, String]] =
 //    val url = "jdbc:mysql://127.0.0.1/animeHub"
 //    val username = "root"

@@ -31,6 +31,8 @@ object RoutesList {
         Ok( ServiceList.getSortedPosts(req) )
       case GET -> Root / "filters" =>
         Ok(ServiceList.getFilters)
+      case req@POST -> Root / "search" =>
+        Ok( ServiceList.findPost(req) )
     }
     routes
 }
