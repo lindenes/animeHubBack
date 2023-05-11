@@ -55,9 +55,9 @@ object ServiceList {
   def getSortedPosts(req: Request[IO] ):IO[Json]=
     req.as[Json].flatMap{ json =>
       val filterType = json.hcursor.get[Int]("filterType").toOption.getOrElse(0)
-      val filterGenre = json.hcursor.get[Int]("filterType").toOption.getOrElse(0)
-      val sort = json.hcursor.get[Int]("filterType").toOption.getOrElse(0)
-      val sortBy = json.hcursor.get[Int]("filterType").toOption.getOrElse(0)
+      val filterGenre = json.hcursor.get[Int]("filterGenre").toOption.getOrElse(0)
+      val sort = json.hcursor.get[Int]("sort").toOption.getOrElse(0)
+      val sortBy = json.hcursor.get[Int]("sortBy").toOption.getOrElse(0)
 
       PostQuery.getPostList(filterType, filterGenre, sort ,sortBy).map(posts => Json.arr(posts: _*))
 
