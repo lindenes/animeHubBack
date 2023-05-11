@@ -127,8 +127,9 @@ object PostQuery{
       "root",
       "",
     )
+    val searchTitle = titleSearchValue + "%"
 
-    sql"SELECT * FROM post WHERE `title` LIKE {$titleSearchValue + "%"} LIMIT 10"
+    sql"SELECT * FROM post WHERE `title` LIKE $searchTitle LIMIT 10"
       .query[Post]
       .to[List]
       .transact(xa)
