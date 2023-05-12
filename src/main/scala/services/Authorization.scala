@@ -21,7 +21,7 @@ object Authorization {
     if checkLogin._2 then
       if checkPass._2 then
         PersonQuery.getPersonInfo(login) match
-          case Left(value) => 
+          case Left(value) => Session.put("currentUser", value.id)
             json"""{"personId": ${value.id}, "personLogin":  ${value.login}, "createdData": ${value.createdAt},
               "personEmail":${value.email}, "personAge": ${value.age}, "personAvatar": ${value.avatarPath}, "personRole": ${value.role}, "xxxContent": ${value.xxxContent}  }"""
           case Right(value) => json"""{"getInfoError":  $value }"""
