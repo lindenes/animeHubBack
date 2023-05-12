@@ -92,7 +92,7 @@ object PostQuery{
       }
       }
       .handleErrorWith(
-        e => IO.pure( List(json"""{"info":"Постов не найдено"}""") )
+        e => IO.pure( List.empty[Json] )
       )
 
   private def getSqlQueryForFilter(filterType:Int, filterGenre:Int, sort:Int, sortBy:Int):Fragment =
@@ -147,7 +147,7 @@ object PostQuery{
 
         )
       }
-      .handleErrorWith(e => IO.pure( List( json"""{"errorSearch":  "Ошибка поиска"}""") ) )
+      .handleErrorWith(e => IO.pure( List.empty[Json] ))
 
 
 //  def getPostListJDBCAsync(): IO[Either[Post, String]] =
