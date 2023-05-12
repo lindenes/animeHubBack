@@ -71,6 +71,15 @@ object ServiceList {
       PostQuery.getPostList(searchTitle).map(posts => Json.arr(posts: _*))
     }
 
+  def addNewComment(req:Request[IO]): IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val text = json.hcursor.get[String]("text").toOption.getOrElse("")
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+      val userId = json.hcursor.get[Int]("userId").toOption.getOrElse(0)
+      
+      CommentQuery.addComment(userId, postId, text)
+
+    }
 }
 
 

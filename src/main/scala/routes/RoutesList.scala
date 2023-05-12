@@ -4,14 +4,15 @@ import cats.effect.*
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
 import services.ServiceList
-import org.http4s.circe._
-import io.circe._
-import io.circe.literal._
+import org.http4s.circe.*
+import io.circe.*
+import io.circe.literal.*
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
-import org.http4s.dsl.io._
-import cats.implicits._
-import cats.syntax.foldable._
+import org.http4s.dsl.io.*
+import cats.implicits.*
+import cats.syntax.foldable.*
+import data.sqlquery.PersonQuery.UserInfo
 object RoutesList {
 
   def getRouteList:HttpRoutes[IO] =
@@ -33,6 +34,8 @@ object RoutesList {
         Ok(ServiceList.getFilters)
       case req@POST -> Root / "search" =>
         Ok( ServiceList.findPost(req) )
+      case req@POST -> Root / "commentAdd" =>
+        Ok( ServiceList.addNewComment(req) )
     }
     routes
 }

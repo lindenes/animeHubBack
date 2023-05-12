@@ -1,6 +1,6 @@
 package data.sqlquery
 
-import cats.effect.{IO, IOApp}
+import cats.effect.{ExitCode, IO, IOApp}
 import org.http4s.Request
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -10,23 +10,25 @@ import doobie.util.ExecutionContexts
 import doobie.util.fragments
 import io.circe.Json
 import io.circe.literal.json
-import io.circe.syntax._
-import cats.effect.IO
+import io.circe.syntax.*
+import data.sqlquery.PersonQuery.UserInfo
+
 import java.sql.{DriverManager, SQLException}
-import data.{SortBy, Sort}
+import data.{Sort, SortBy}
+import routes.Session
 object PostQuery{
   case class Post(id:Int, createdAt:String, title:String, description:String, year:String, imagePath:String,
                   videoPath:String, episodeCount:Int, episodeDuration:Int, userId:Int, typeId:Int, rating:Double, xxxContent:Int, genreId:Int)
 
   def getPostList: IO[List[Json]] =
 
-    getPostListDB.flatMap{
+     getPostListDB.flatMap{
       case Left(value) => IO.pure(
         value.map(elem =>
           json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
                 "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
                   "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
-                    "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating} }""")
+                    "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "genreId": ${elem.genreId} }""")
       )
       case Right(value) => IO.pure(List(json"""{"postError": $value}"""))
 
@@ -89,6 +91,9 @@ object PostQuery{
                          "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
       }
       }
+      .handleErrorWith(
+        e => IO.pure( List(json"""{"info":"Постов не найдено"}""") )
+      )
 
   private def getSqlQueryForFilter(filterType:Int, filterGenre:Int, sort:Int, sortBy:Int):Fragment =
 
