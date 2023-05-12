@@ -8,7 +8,7 @@ import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.jsonOf
 import org.http4s.{Request, UrlForm}
 import services.Validation
-import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PostQuery}
+import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PlaylistQuery, PostQuery}
 import io.circe.syntax.*
 object ServiceList {
   case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photo:String)
@@ -79,6 +79,21 @@ object ServiceList {
       
       CommentQuery.addComment(userId, postId, text)
 
+    }
+
+  def getPlaylists(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{json =>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+
+      PlaylistQuery.getPersonPlaylists(personId).map(playlists => Json.arr(playlists: _*))
+    }
+
+  def addPlayList(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{json=>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      val playlistTitle = json.hcursor.get[String]("title").toOption.getOrElse("")
+
+      PlaylistQuery.addPlaylist(personId, playlistTitle)
     }
 }
 
