@@ -110,16 +110,16 @@ object PostQuery{
       val thirdPat = if(sort == 0)
         sql""
       else
-        sql"ORDER BY $sortColumn $sortDirection"
+        sql" ORDER BY $sortColumn $sortDirection"
 
       firstPat ++ secondPat ++ thirdPat
 
  private def getWhereForQuery(filterType:Int, filterGenre:Int):Fragment =
    if(filterType != 0 && filterGenre != 0)
      sql" WHERE type_id = $filterType AND genre_id = $filterGenre"
-   else if (filterType != 0 && filterGenre == 0)
+   else if (filterType != 0)
      sql"WHERE type_id = $filterType"
-   else if (filterGenre != 0 && filterType == 0)
+   else if (filterGenre != 0)
      sql"WHERE genre_id = $filterGenre"
    else sql""
 
