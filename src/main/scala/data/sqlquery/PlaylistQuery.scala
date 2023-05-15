@@ -8,6 +8,7 @@ import doobie.util.fragments
 import io.circe.Json
 import io.circe.literal.json
 import io.circe.syntax.*
+import PostQuery.Post
 object PlaylistQuery {
 
   case class  Playlist(id:Int, created_at:String, title:String)
@@ -51,4 +52,50 @@ object PlaylistQuery {
         case Right(_) => json"""{"success": "true"}"""
         case Left(e) => json"""{"success":  "false"}"""
       }
+
+  def addItemToPlaylist(playlistId:Int, postId:Int ):IO[Json]=
+
+    val xa = Transactor.fromDriverManager[IO](
+      "com.mysql.cj.jdbc.Driver",
+      "jdbc:mysql://127.0.0.1/animeHub",
+      "root",
+      ""
+    )
+
+    sql"INSERT INTO `post_playlist` (`playlist_id`, `post_id`) VALUES ($playlistId, $postId)"
+      .update
+      .run
+      .transact(xa)
+      .attemptSql
+      .map {
+        case Right(_) => json"""{"success": "true"}"""
+        case Left(e) => json"""{"success":  "false"}"""
+      }
+
+  def getPlayListsItems(playlistId:Int):IO[List[Json]] =
+
+    val xa = Transactor.fromDriverManager[IO](
+      "com.mysql.cj.jdbc.Driver",
+      "jdbc:mysql://127.0.0.1/animeHub",
+      "root",
+      ""
+    )
+
+    sql"SELECT * FROM `post` WHERE id IN (SELECT post_id FROM `post_playlist` WHERE playlist_id = $playlistId)"
+      .query[Post]
+      .to[List]
+      .transact(xa)
+      .map{ posts =>
+        posts.map{
+          elem =>
+            json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
+                  "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
+                    "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
+                      "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "genreId": ${elem.genreId} }"""
+          
+        }
+        
+      }
+      .handleErrorWith( ex => IO.pure( List.empty[Json] ))
+
 }

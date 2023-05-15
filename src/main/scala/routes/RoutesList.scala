@@ -10,9 +10,11 @@ import io.circe.literal.*
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import org.http4s.dsl.io.*
+import org.http4s.headers.Cookie
 import cats.implicits.*
 import cats.syntax.foldable.*
 import data.sqlquery.PersonQuery.UserInfo
+import org.typelevel.ci.CIString
 object RoutesList {
 
   def getRouteList:HttpRoutes[IO] =
@@ -23,7 +25,7 @@ object RoutesList {
       case req@POST -> Root / "signup" =>
         Ok( ServiceList.doRegistration(req) )
       case req@POST -> Root / "login" =>
-        Ok ( ServiceList.doAuthorization(req) )
+        Ok ( ServiceList.doAuthorization(req) ).map(_.putHeaders(Header.Raw(CIString("Set-Cookie"), s"authcookie=${Session.get("currentUser").getOrElse(0).toString}; Path=/")))
       case GET -> Root / "posts" =>
         Ok ( ServiceList.getPosts )
       case GET -> Root / "post" / IntVar(id) =>
@@ -40,6 +42,10 @@ object RoutesList {
         Ok( ServiceList.getPlaylists(req) )
       case req@POST -> Root / "addPlaylist" =>
         Ok( ServiceList.addPlayList(req) )
+      case req@POST -> Root / "getPlaylistsItems" =>
+        Ok( ServiceList.getPlaylistsItems(req) )
+      case req@POST -> Root / "addPlaylistItem" =>
+        Ok( ServiceList.addItemToPlaylist(req) )
     }
     routes
 }

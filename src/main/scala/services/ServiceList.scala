@@ -95,6 +95,21 @@ object ServiceList {
 
       PlaylistQuery.addPlaylist(personId, playlistTitle)
     }
+
+  def getPlaylistsItems(req:Request[IO]):IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val playlistId = json.hcursor.get[Int]("playlistId").toOption.getOrElse(0)
+
+      PlaylistQuery.getPlayListsItems(playlistId).map(items => Json.arr(items:_*))
+    }
+
+  def addItemToPlaylist(req:Request[IO]):IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val playlistId = json.hcursor.get[Int]("playlistId").toOption.getOrElse(0)
+      val  postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+
+      PlaylistQuery.addItemToPlaylist(playlistId, postId)
+    }
 }
 
 
