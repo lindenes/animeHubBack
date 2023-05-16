@@ -16,6 +16,9 @@ import data.sqlquery.PersonQuery.UserInfo
 import java.sql.{DriverManager, SQLException}
 import data.{Sort, SortBy}
 import routes.Session
+import services.PhotoService
+
+import java.util.Base64
 object PostQuery{
   case class Post(id:Int, createdAt:String, title:String, description:String, year:String, imagePath:String,
                   videoPath:String, episodeCount:Int, episodeDuration:Int, userId:Int, typeId:Int, rating:Double, xxxContent:Int, genreId:Int)
@@ -149,6 +152,29 @@ object PostQuery{
       }
       .handleErrorWith(e => IO.pure( List.empty[Json] ))
 
+  def addPost(title: String, description: String, year: String, image:String, episodeCount: Int, episodeDuration: Int,
+              userId: Int, typeId: Int, xxxContent: Int, genreId: Int):IO[Json] =
+
+    val imagePath = PhotoService.uploadPostPhoto(Base64.getDecoder.decode(image), title )
+    val videoPath = ""
+
+    val xa = Transactor.fromDriverManager[IO](
+      "com.mysql.cj.jdbc.Driver",
+      "jdbc:mysql://127.0.0.1/animeHub",
+      "root",
+      "",
+    )
+
+    sql"INSERT INTO `POST` (`title`, `description`, `year`, `image_path`, `video_path`, `episode_count`, `episode_duration`, `user_id`, `type_id`, `rating`, `xxx_content`, `genre_id`) VALUES " +
+      sql"($title, $description, $year, $imagePath, $videoPath, $episodeCount, $episodeDuration, $userId, $typeId, 0, $xxxContent, $genreId )"
+      .update
+      .run
+      .transact(xa)
+      .attemptSql
+      .map {
+        case Right(_) => json"""{"success": "true"}"""
+        case Left(e) => json"""{"success":  "false"}"""
+      }
 
 //  def getPostListJDBCAsync(): IO[Either[Post, String]] =
 //    val url = "jdbc:mysql://127.0.0.1/animeHub"

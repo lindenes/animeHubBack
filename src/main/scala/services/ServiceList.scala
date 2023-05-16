@@ -110,6 +110,22 @@ object ServiceList {
 
       PlaylistQuery.addItemToPlaylist(playlistId, postId)
     }
+
+  def addNewPost(req:Request[IO]):IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val title = json.hcursor.get[String]("title").toOption.getOrElse("")
+      val description = json.hcursor.get[String]("description").toOption.getOrElse("")
+      val year = json.hcursor.get[String]("year").toOption.getOrElse("")
+      val image = json.hcursor.get[String]("image").toOption.getOrElse("")
+      val episodeCount = json.hcursor.get[Int]("episodeCount").toOption.getOrElse(0)
+      val episodeDuration = json.hcursor.get[Int]("episodeDuration").toOption.getOrElse(0)
+      val userId = json.hcursor.get[Int]("userId").toOption.getOrElse(0)
+      val typeId = json.hcursor.get[Int]("typeId").toOption.getOrElse(0)
+      val xxxContent = json.hcursor.get[Int]("xxxContent").toOption.getOrElse(0)
+      val genreId = json.hcursor.get[Int]("genreId").toOption.getOrElse(0)
+      
+      PostQuery.addPost(title, description, year, image, episodeCount, episodeDuration, userId, typeId, xxxContent, genreId)
+    }
 }
 
 

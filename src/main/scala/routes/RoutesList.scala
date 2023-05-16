@@ -46,6 +46,8 @@ object RoutesList {
         Ok( ServiceList.getPlaylistsItems(req) )
       case req@POST -> Root / "addPlaylistItem" =>
         Ok( ServiceList.addItemToPlaylist(req) )
+      case req@POST -> Root / "addPost" =>
+        Ok( ServiceList.addNewPost(req) )
     }
     routes
 }
