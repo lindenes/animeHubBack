@@ -165,8 +165,7 @@ object PostQuery{
       "",
     )
 
-    sql"INSERT INTO `POST` (`title`, `description`, `year`, `image_path`, `video_path`, `episode_count`, `episode_duration`, `user_id`, `type_id`, `rating`, `xxx_content`, `genre_id`) VALUES " +
-      sql"($title, $description, $year, $imagePath, $videoPath, $episodeCount, $episodeDuration, $userId, $typeId, 0, $xxxContent, $genreId )"
+    sql"INSERT INTO `post` (`title`, `description`, `year`, `image_path`, `video_path`, `episode_count`, `episode_duration`, `user_id`, `type_id`, `rating`, `xxx_content`, `genre_id`) VALUES ($title, $description, $year, $imagePath, $videoPath, $episodeCount, $episodeDuration, $userId, $typeId, 0, $xxxContent, $genreId )"
       .update
       .run
       .transact(xa)
