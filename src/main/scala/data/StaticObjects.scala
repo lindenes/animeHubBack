@@ -24,13 +24,14 @@ object Sort extends Enumeration {
   type Sort = Value
 
   val default = Value (0, "")
-  val date = Value(1, "created_at")
+  //val date = Value(1, "created_at")
+  val year = Value (1, "year")
   val episodeCount = Value(2, "episode_count")
   val title = Value(3, "title")
   val rating = Value(4, "rating")
-  val year = Value (5, "year")
+ // val year = Value (5, "year")
 
-  def sortList = List(default, date, episodeCount, title, rating, year)
+  def sortList = List(default, title, episodeCount, rating, year)
 }
 object SortBy extends Enumeration{
   type SortBy = Value

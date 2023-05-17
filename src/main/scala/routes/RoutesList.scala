@@ -19,13 +19,15 @@ object RoutesList {
 
   def getRouteList:HttpRoutes[IO] =
 
+    val cock = ResponseCookie("Set-Cookie", s"${Session.get("currentUser").getOrElse(0)}", Option(HttpDate.current), Option(java.time.Duration.ofMinutes(2).toMinutes) )
+
     val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
       case GET -> Root / "test" =>
         Ok(ServiceList.testMethod())
       case req@POST -> Root / "signup" =>
         Ok( ServiceList.doRegistration(req) )
       case req@POST -> Root / "login" =>
-        Ok ( ServiceList.doAuthorization(req) ).map(_.putHeaders(Header.Raw(CIString("Set-Cookie"), s"authcookie=${Session.get("currentUser").getOrElse(0).toString}; Path=/")))
+        Ok ( ServiceList.doAuthorization(req) ).map(_.addCookie(cock ) )
       case GET -> Root / "posts" =>
         Ok ( ServiceList.getPosts )
       case GET -> Root / "post" / IntVar(id) =>
