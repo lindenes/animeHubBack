@@ -1,5 +1,6 @@
 package routes
 
+import java.time.Instant
 import cats.effect.*
 import org.http4s.*
 import org.http4s.dsl.Http4sDsl
@@ -19,15 +20,13 @@ object RoutesList {
 
   def getRouteList:HttpRoutes[IO] =
 
-    val cock = ResponseCookie("Set-Cookie", s"${Session.get("currentUser").getOrElse(0)}", Option(HttpDate.current), Option(java.time.Duration.ofMinutes(2).toMinutes) )
-
     val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
       case GET -> Root / "test" =>
         Ok(ServiceList.testMethod())
       case req@POST -> Root / "signup" =>
         Ok( ServiceList.doRegistration(req) )
       case req@POST -> Root / "login" =>
-        Ok ( ServiceList.doAuthorization(req) ).map(_.addCookie(cock ) )
+        Ok ( ServiceList.doAuthorization(req) )
       case GET -> Root / "posts" =>
         Ok ( ServiceList.getPosts )
       case GET -> Root / "post" / IntVar(id) =>
