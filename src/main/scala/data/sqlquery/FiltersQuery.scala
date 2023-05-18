@@ -23,7 +23,7 @@ object FiltersQuery {
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "",
+      "cegthuthjq",
     )
 
     sql"SELECT * FROM `type`"
@@ -43,7 +43,7 @@ object FiltersQuery {
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "",
+      "cegthuthjq",
     )
 
     sql"SELECT * FROM `genre`"

@@ -16,7 +16,7 @@ object CommentQuery {
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "",
+      "cegthuthjq",
     )
     sql"SELECT comment.*, user.login FROM comment INNER JOIN user ON comment.user_id = user.id WHERE comment.post_id = $postId;"
       .query[Comment]
@@ -39,7 +39,7 @@ object CommentQuery {
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "",
+      "cegthuthjq",
     )
 
     sql"INSERT INTO `comment` (`text`, `user_id`, `post_id`) VALUES ($text, $userId, $postId)"

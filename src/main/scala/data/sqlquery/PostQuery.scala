@@ -42,7 +42,7 @@ object PostQuery{
      "com.mysql.cj.jdbc.Driver",
      "jdbc:mysql://127.0.0.1/animeHub",
      "root",
-     "",
+     "cegthuthjq",
    )
 
    sql"SELECT * FROM post LIMIT 10"
@@ -58,7 +58,7 @@ object PostQuery{
      "com.mysql.cj.jdbc.Driver",
      "jdbc:mysql://127.0.0.1/animeHub",
      "root",
-     "",
+     "cegthuthjq",
    )
 
    sql"SELECT * FROM post WHERE id = $id"
@@ -80,7 +80,7 @@ object PostQuery{
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "",
+      "cegthuthjq",
     )
 
     getSqlQueryForFilter(filterType, filterGenre, sort, sortBy)
@@ -133,7 +133,7 @@ object PostQuery{
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "",
+      "cegthuthjq",
     )
     val searchTitle = titleSearchValue + "%"
 
@@ -162,7 +162,7 @@ object PostQuery{
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "",
+      "cegthuthjq",
     )
 
     sql"INSERT INTO `post` (`title`, `description`, `year`, `image_path`, `video_path`, `episode_count`, `episode_duration`, `user_id`, `type_id`, `rating`, `xxx_content`, `genre_id`) VALUES ($title, $description, $year, $imagePath, $videoPath, $episodeCount, $episodeDuration, $userId, $typeId, 0, $xxxContent, $genreId )"
@@ -178,7 +178,7 @@ object PostQuery{
 //  def getPostListJDBCAsync(): IO[Either[Post, String]] =
 //    val url = "jdbc:mysql://127.0.0.1/animeHub"
 //    val username = "root"
-//    val password = ""
+//    val password = "cegthuthjq"
 //    for {
 //      connection <- IO.delay(DriverManager.getConnection(url, username, password))
 //      query = "SELECT * FROM post LIMIT 10"

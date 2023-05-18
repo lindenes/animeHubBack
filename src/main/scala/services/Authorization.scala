@@ -35,7 +35,7 @@ object Authorization {
     try {
       val url = "jdbc:mysql://127.0.0.1/animeHub"
       val username = "root"
-      val password = ""
+      val password = "cegthuthjq"
       Class.forName("com.mysql.cj.jdbc.Driver")
       val connection = DriverManager.getConnection(url, username, password)
 
@@ -63,7 +63,7 @@ object Authorization {
     try {
       val url = "jdbc:mysql://127.0.0.1/animeHub"
       val username = "root"
-      val password = ""
+      val password = "cegthuthjq"
       Class.forName("com.mysql.cj.jdbc.Driver")
       val connection = DriverManager.getConnection(url, username, password)
 

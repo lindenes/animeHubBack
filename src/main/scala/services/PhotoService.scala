@@ -10,8 +10,7 @@ import java.nio.file.StandardOpenOption.{CREATE, TRUNCATE_EXISTING}
 import scala.jdk.CollectionConverters
 object PhotoService {
   def uploadAvatarPhoto(photoByte: Array[Byte], login:String ): String =
-    val rootPath = FileSystems.getDefault.getRootDirectories.iterator.next()
-    val avatarPath = rootPath.resolve("animeHub\\avatarPhoto")
+    val avatarPath = Paths.get("D:/developing/anime-hub/public/avatarPhoto")
 
     Files.createDirectories(avatarPath)
 
@@ -34,8 +33,7 @@ object PhotoService {
     s"$avatarPath\\$login.$imageFormat"
 
   def uploadPostPhoto(photoByte: Array[Byte], title:String):String =
-    val rootPath = FileSystems.getDefault.getRootDirectories.iterator.next()
-    val avatarPath = rootPath.resolve("animeHub\\postPhoto")
+    val avatarPath = Paths.get("D:/developing/anime-hub/public/postMainPhoto")
 
     Files.createDirectories(avatarPath)
 
