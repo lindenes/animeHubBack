@@ -2,6 +2,7 @@ package services
 
 import cats.Applicative
 import cats.effect.{IO, Sync}
+import data.PersonRole
 import io.circe.*
 import io.circe.literal.*
 import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
@@ -125,6 +126,36 @@ object ServiceList {
       val genreId = json.hcursor.get[Int]("genreId").toOption.getOrElse(0)
       
       PostQuery.addPost(title, description, year, image, episodeCount, episodeDuration, userId, typeId, xxxContent, genreId)
+    }
+
+  def getUserList(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val id = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      PersonQuery.getPersonList(id).map(userList => Json.arr(userList: _*))
+    }
+  def getRoleList(req:Request[IO]):IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val id = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+
+       PersonQuery.getCurrentUser(id).flatMap{ user =>
+         if user.nonEmpty && user.get.role == 4 then
+
+           IO.pure(
+             Json.arr(
+             PersonRole.roleList.map{ role => json"""{"roleId": ${role.id}, "roleName": ${role.toString}}""" }: _*)
+           )
+
+         else
+           IO.pure(json"""{"error": "Вы не администратор, досвидание"}""")
+       }
+    }
+    
+  def updatePersonRole(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      val roleId = json.hcursor.get[Int]("roleId").toOption.getOrElse(0)
+      
+      PersonQuery.updateRole(personId, roleId)
     }
 }
 

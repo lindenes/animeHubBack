@@ -30,7 +30,7 @@ object PhotoService {
 
     outputStream.write(photoByte)
     outputStream.close()
-    s"$avatarPath\\$login.$imageFormat"
+    s"avatarPhoto/$login.$imageFormat"
 
   def uploadPostPhoto(photoByte: Array[Byte], title:String):String =
     val avatarPath = Paths.get("D:/developing/anime-hub/public/postMainPhoto")
@@ -53,5 +53,5 @@ object PhotoService {
 
     outputStream.write(photoByte)
     outputStream.close()
-    s"$avatarPath\\$title.$imageFormat"
+    s"postMainPhoto/$title.$imageFormat"
 }

@@ -15,7 +15,6 @@ import data.sqlquery.PersonQuery.UserInfo
 
 import java.sql.{DriverManager, SQLException}
 import data.{Sort, SortBy}
-import routes.Session
 import services.PhotoService
 
 import java.util.Base64

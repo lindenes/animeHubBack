@@ -9,7 +9,6 @@ import data.sqlquery
 import data.sqlquery.PersonQuery
 import data.sqlquery.PersonQuery.UserInfo
 
-import routes.Session
 object Authorization {
 
   def getAuth(login:String, password:String):Json =
@@ -21,7 +20,7 @@ object Authorization {
     if checkLogin._2 then
       if checkPass._2 then
         PersonQuery.getPersonInfo(login) match
-          case Left(value) => Session.put("currentUser", value.id)
+          case Left(value) =>
             json"""{"personId": ${value.id}, "personLogin":  ${value.login}, "createdData": ${value.createdAt},
               "personEmail":${value.email}, "personAge": ${value.age}, "personAvatar": ${value.avatarPath}, "personRole": ${value.role}, "xxxContent": ${value.xxxContent}  }"""
           case Right(value) => json"""{"getInfoError":  $value }"""
@@ -92,5 +91,4 @@ object Authorization {
     catch {
       case ex: SQLException => ("Ошибка при проверке пароля " + ex.getMessage, false)
     }
-
 }
