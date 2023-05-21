@@ -20,7 +20,7 @@ object PersonQuery {
     try {
       val url = "jdbc:mysql://127.0.0.1/animeHub"
       val username = "root"
-      val password = "cegthuthjq"
+      val password = ",tkstudjplbrb"
       Class.forName("com.mysql.cj.jdbc.Driver")
       val connection = DriverManager.getConnection(url, username, password)
 
@@ -56,7 +56,7 @@ object PersonQuery {
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "cegthuthjq",
+      ",tkstudjplbrb",
     )
 
     sql"SELECT id, created_at, login, email, age, avatar_path, role, xxx_content FROM `user` WHERE id = $personId"
@@ -81,7 +81,7 @@ object PersonQuery {
           "com.mysql.cj.jdbc.Driver",
           "jdbc:mysql://127.0.0.1/animeHub",
           "root",
-          "cegthuthjq",
+          ",tkstudjplbrb",
         )
 
         sql"SELECT id, created_at, login, email, age, avatar_path, role, xxx_content FROM `user`"
@@ -113,7 +113,7 @@ object PersonQuery {
           "com.mysql.cj.jdbc.Driver",
           "jdbc:mysql://127.0.0.1/animeHub",
           "root",
-          "cegthuthjq",
+          ",tkstudjplbrb",
         )
         val searchLogin = loginSearchValue + "%"
 
@@ -139,10 +139,10 @@ object PersonQuery {
       "com.mysql.cj.jdbc.Driver",
       "jdbc:mysql://127.0.0.1/animeHub",
       "root",
-      "cegthuthjq",
+      ",tkstudjplbrb",
     )
 
-    sql"UPDATE `person` SET role = $role WHERE id = $personId"
+    sql"UPDATE `user` SET role = $role WHERE id = $personId"
       .update
       .run
       .transact(xa)

@@ -93,8 +93,9 @@ object ServiceList {
     req.as[Json].flatMap{json=>
       val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
       val playlistTitle = json.hcursor.get[String]("title").toOption.getOrElse("")
+      val isPrivate = json.hcursor.get[Int]("isPrivate").toOption.getOrElse(0)
 
-      PlaylistQuery.addPlaylist(personId, playlistTitle)
+      PlaylistQuery.addPlaylist(personId, playlistTitle, isPrivate)
     }
 
   def getPlaylistsItems(req:Request[IO]):IO[Json] =

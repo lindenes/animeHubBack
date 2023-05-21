@@ -29,7 +29,7 @@ object Registration {
     try {
       val url = "jdbc:mysql://127.0.0.1/animeHub"
       val username = "root"
-      val password = "cegthuthjq"
+      val password = ",tkstudjplbrb"
       Class.forName("com.mysql.cj.jdbc.Driver")
       val connection = DriverManager.getConnection(url, username, password)
 
@@ -53,7 +53,7 @@ object Registration {
     try{
       val url = "jdbc:mysql://127.0.0.1/animeHub"
       val username = "root"
-      val password = "cegthuthjq"
+      val password = ",tkstudjplbrb"
       Class.forName("com.mysql.cj.jdbc.Driver")
       val connection = DriverManager.getConnection(url, username, password)
 
@@ -78,7 +78,7 @@ object Registration {
       try {
         val url = "jdbc:mysql://127.0.0.1/animeHub"
         val username = "root"
-        val password = "cegthuthjq"
+        val password = ",tkstudjplbrb"
         Class.forName("com.mysql.cj.jdbc.Driver")
         val connection = DriverManager.getConnection(url, username, password)
         val sql = "INSERT INTO user (login, email, password_hash, age, avatar_path, role, xxx_content) VALUES (?, ?, ?, ? ,?, ?, ?)"
