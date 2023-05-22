@@ -24,7 +24,7 @@ object PostQuery{
     "com.mysql.cj.jdbc.Driver",
     "jdbc:mysql://127.0.0.1/animeHub",
     "root",
-    ",tkstudjplbrb",
+    ",tkstudjplbrb"
   )
   case class Post(id:Int, createdAt:String, title:String, description:String, year:String, imagePath:String,
                   videoPath:String, episodeCount:Int, episodeDuration:Int, userId:Int, typeId:Int, rating:Double, xxxContent:Int, genreId:Int)
@@ -142,7 +142,7 @@ object PostQuery{
     val imagePath = PhotoService.uploadPostPhoto(Base64.getDecoder.decode(image), title )
     val videoPath = ""
 
-    sql"INSERT INTO `post` (`title`, `description`, `year`, `image_path`, `video_path`, `episode_count`, `episode_duration`, `user_id`, `type_id`, `rating`, `xxx_content`, `genre_id`) VALUES ($title, $description, $year, $imagePath, $videoPath, $episodeCount, $episodeDuration, $userId, $typeId, 0, $xxxContent, $genreId )"
+    sql"INSERT INTO `post` (`title`, `description`, `year`, `image_path`, `video_path`, `episode_count`, `episode_duration`, `user_id`, `type_id`, `xxx_content`, `genre_id`, `rating_count`, `people_count_like`) VALUES ($title, $description, $year, $imagePath, $videoPath, $episodeCount, $episodeDuration, $userId, $typeId, $xxxContent, $genreId,0,0)"
       .update
       .run
       .transact(xa)
