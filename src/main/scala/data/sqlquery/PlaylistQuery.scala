@@ -94,15 +94,18 @@ object PlaylistQuery {
 
   def dropPlaylist(playlistId:Int, personId: Int):IO[Json] =
 
-    sql"DELETE FROM `playlist` WHERE id = $playlistId AND user_id = $personId; DELETE FROM `post_playlist` WHERE playlist_id = $playlistId"
-      .update
-      .run
-      .transact(xa)
-      .attemptSql
-      .map {
-        case Right(_) => json"""{"success": "true"}"""
-        case Left(e) => json"""{"success":  "false"}"""
-      }
+    for {
+      _ <- sql"DELETE FROM `playlist` WHERE id = $playlistId AND user_id = $personId"
+        .update
+        .run
+        .transact(xa)
+        .attemptSql
+      _ <- sql"DELETE FROM `post_playlist` WHERE playlist_id = $playlistId"
+        .update
+        .run
+        .transact(xa)
+        .attemptSql
+    } yield json"""{"success": "true"}"""
 
   def dropPlaylistsItem(playlistId:Int, postId:Int):IO[Json]=
 

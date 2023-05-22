@@ -118,7 +118,7 @@ object PostQuery{
 
 
   def getPostList(titleSearchValue: String): IO[List[Json]] =
-    
+
     val searchTitle = titleSearchValue + "%"
 
     sql"SELECT * FROM post WHERE `title` LIKE $searchTitle LIMIT 10"
@@ -154,15 +154,18 @@ object PostQuery{
 
   def setRating(postId:Int, rating:Int, personId:Int):IO[Json]=
 
-    sql"UPDATE `post` SET rating_count = rating_count + $rating, people_count_like = people_count_like + 1 WHERE post.id = $postId; INSERT INTO user_rating_post (user_id, post_id) VALUES ($personId, $postId)"
-      .update
-      .run
-      .transact(xa)
-      .attemptSql
-      .map {
-        case Right(_) => json"""{"success": "true"}"""
-        case Left(e) => json"""{"success":  "false"}"""
-      }
+    for {
+      _ <- sql"UPDATE `post` SET rating_count = rating_count + $rating, people_count_like = people_count_like + 1 WHERE id = $postId"
+        .update
+        .run
+        .transact(xa)
+        .attemptSql
+      _ <- sql"INSERT INTO user_rating_post (user_id, post_id) VALUES ($personId, $postId)"
+        .update
+        .run
+        .transact(xa)
+        .attemptSql
+    } yield json"""{"success": "true"}"""
 
 //  def getPostListJDBCAsync(): IO[Either[Post, String]] =
 //    val url = "jdbc:mysql://127.0.0.1/animeHub"
