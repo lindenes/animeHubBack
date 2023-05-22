@@ -15,6 +15,12 @@ import io.circe.syntax.*
 import data.sqlquery.PersonQuery.UserInfo
 object PersonQuery {
 
+  val xa = Transactor.fromDriverManager[IO](
+    "com.mysql.cj.jdbc.Driver",
+    "jdbc:mysql://127.0.0.1/animeHub",
+    "root",
+    ",tkstudjplbrb",
+  )
   case class UserInfo(id:Int, createdAt:String, login:String, email:String, age:Int, avatarPath:String, role:Int, xxxContent:Int)
   def getPersonInfo(login:String):Either[UserInfo, String] =
     try {
@@ -52,13 +58,6 @@ object PersonQuery {
 
   def getCurrentUser(personId: Int ):IO[Option[UserInfo]] =
 
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
-
     sql"SELECT id, created_at, login, email, age, avatar_path, role, xxx_content FROM `user` WHERE id = $personId"
     .query[UserInfo]
     .option
@@ -76,13 +75,6 @@ object PersonQuery {
     getCurrentUser( personId ).flatMap { user =>
 
       if user.nonEmpty && (user.get.role == PersonRole.Admin.id) then
-
-        val xa = Transactor.fromDriverManager[IO](
-          "com.mysql.cj.jdbc.Driver",
-          "jdbc:mysql://127.0.0.1/animeHub",
-          "root",
-          ",tkstudjplbrb",
-        )
 
         sql"SELECT id, created_at, login, email, age, avatar_path, role, xxx_content FROM `user`"
           .query[UserInfo]
@@ -109,12 +101,6 @@ object PersonQuery {
 
       if user.nonEmpty && (user.get.role == PersonRole.Admin.id) then
 
-        val xa = Transactor.fromDriverManager[IO](
-          "com.mysql.cj.jdbc.Driver",
-          "jdbc:mysql://127.0.0.1/animeHub",
-          "root",
-          ",tkstudjplbrb",
-        )
         val searchLogin = loginSearchValue + "%"
 
         sql"SELECT id, created_at, login, email, age, avatar_path, role, xxx_content FROM `user` WHERE `title` LIKE $searchLogin LIMIT 10"
@@ -135,13 +121,6 @@ object PersonQuery {
 
   def updateRole(personId: Int, role:Int):IO[Json] =
 
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
-
     sql"UPDATE `user` SET role = $role WHERE id = $personId"
       .update
       .run
@@ -153,5 +132,17 @@ object PersonQuery {
           IO.pure(json"""{"success":  "Не получилось обновить роль"}""")
       }
 
+  def updateXxxContent(personId:Int, xxxContent:Int):IO[Json]=
+
+    sql"UPDATE `user` SET xxx_content = $xxxContent WHERE id = $personId"
+      .update
+      .run
+      .transact(xa)
+      .flatMap { rowsUpdated =>
+        if rowsUpdated > 0 then
+          IO.pure(json"""{"success":  "Роль обновлена"}""")
+        else
+          IO.pure(json"""{"success":  "Не получилось обновить роль"}""")
+      }
 
 }

@@ -8,6 +8,12 @@ import io.circe.Json
 import io.circe.literal.json
 object FiltersQuery {
 
+  val xa = Transactor.fromDriverManager[IO](
+    "com.mysql.cj.jdbc.Driver",
+    "jdbc:mysql://127.0.0.1/animeHub",
+    "root",
+    ",tkstudjplbrb",
+  )
   case class Type(id:Int, name:String)
 
   case class Genre(id:Int, name:String)
@@ -18,13 +24,6 @@ object FiltersQuery {
       )
     }
   def getTypes:IO[Json] =
-
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
 
     sql"SELECT * FROM `type`"
       .query[Type]
@@ -38,13 +37,6 @@ object FiltersQuery {
       )
 
   def getGenre:IO[Json] =
-
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
 
     sql"SELECT * FROM `genre`"
       .query[Genre]

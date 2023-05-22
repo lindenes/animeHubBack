@@ -55,6 +55,18 @@ object RoutesList {
         Ok( ServiceList.getRoleList(req) )
       case req@POST -> Root / "updateRole" =>
         Ok( ServiceList.updatePersonRole(req) )
+      case req@POST -> Root / "postsPlaylists" =>
+        Ok( ServiceList.getPlaylistFromPost(req) )
+      case req@POST -> Root / "setRating" =>
+        Ok( ServiceList.setPostRating(req) )
+      case req@POST -> Root / "dropPlaylist" =>
+        Ok( ServiceList.dropPersonPlaylist(req) )
+      case req@POST -> Root / "dropPlaylistItem" =>
+        Ok( ServiceList.dropPlaylistItem(req) )
+      case req@POST -> Root / "getPersonComment" =>
+        Ok( ServiceList.getPersonComments(req) )
+      case req@POST -> Root / "updateXXX" =>
+        Ok( ServiceList.updatePersonXxxContent(req) )
     }
     routes
 }

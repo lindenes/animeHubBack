@@ -8,24 +8,25 @@ import io.circe.Json
 import io.circe.literal.json
 
 object CommentQuery {
-  case class Comment(id:Int, createdAt:String, text:String, userId:String, postId:String, login:String)
+
+  val xa = Transactor.fromDriverManager[IO](
+    "com.mysql.cj.jdbc.Driver",
+    "jdbc:mysql://127.0.0.1/animeHub",
+    "root",
+    ",tkstudjplbrb",
+  )
+  case class Comment(id:Int, createdAt:String, text:String, userId:String, postId:String, login:String, avatarPath:String)
 
   def getCommentList(postId:Int):IO[Json]=
 
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
-    sql"SELECT comment.*, user.login FROM comment INNER JOIN user ON comment.user_id = user.id WHERE comment.post_id = $postId;"
+    sql"SELECT comment.*, user.login, user.avatar_path FROM comment INNER JOIN user ON comment.user_id = user.id WHERE comment.post_id = $postId;"
       .query[Comment]
       .to[List]
       .transact(xa)
       .map( posts => json"""{"Comments": ${
         posts.map{
           elem=>
-            json"""{"commentId": ${elem.id}, "createdAt":  ${elem.createdAt}, "text":  ${elem.text}, "userId": ${elem.userId}, "postId":  ${elem.postId}, "userLogin":  ${elem.login}}"""
+            json"""{"commentId": ${elem.id}, "createdAt":  ${elem.createdAt}, "text":  ${elem.text}, "userId": ${elem.userId}, "postId":  ${elem.postId}, "userLogin":  ${elem.login}, "imagePath":  ${elem.avatarPath}}"""
         }
       }}"""
       )
@@ -34,13 +35,6 @@ object CommentQuery {
       )
 
   def addComment(userId: Int, postId: Int, text:String):IO[Json] =
-
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
 
     sql"INSERT INTO `comment` (`text`, `user_id`, `post_id`) VALUES ($text, $userId, $postId)"
       .update
@@ -51,5 +45,18 @@ object CommentQuery {
         case Right(_) => json"""{"success": "true"}"""
         case Left(e) => json"""{"success":  "false"}"""
       }
+
+  def getPersonComments(personId:Int):IO[List[Json]]=
+
+    sql"SELECT * FROM `comment` WHERE user_id = $personId"
+      .query[Comment]
+      .to[List]
+      .transact(xa)
+      .map{ comments =>
+        comments.map( comment =>
+          json"""{"commentId": ${comment.id}, "createdAt":  ${comment.createdAt}, "text":  ${comment.text}, "userId": ${comment.userId}, "postId":  ${comment.postId}, "userLogin":  ${comment.login}, "imagePath":  ${comment.avatarPath}}"""
+        )
+      }
+      .handleErrorWith(e => IO.pure( List.empty[Json] ))
     
 }

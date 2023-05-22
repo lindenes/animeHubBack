@@ -158,6 +158,51 @@ object ServiceList {
       
       PersonQuery.updateRole(personId, roleId)
     }
+
+  def getPlaylistFromPost(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{json=>
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+
+      PlaylistQuery.getPostsPlaylists(postId, personId).map(items => Json.arr(items:_*))
+    }
+
+  def setPostRating(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      val rating = json.hcursor.get[Int]("rating").toOption.getOrElse(0)
+
+      PostQuery.setRating(postId, rating, personId)
+    }
+    
+  def dropPersonPlaylist(req:Request[IO]):IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val playlistId = json.hcursor.get[Int]("playlistId").toOption.getOrElse(0)
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      PlaylistQuery.dropPlaylist(playlistId, personId)
+    }
+    
+  def dropPlaylistItem(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val playlistId = json.hcursor.get[Int]("playlistId").toOption.getOrElse(0)
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+      PlaylistQuery.dropPlaylistsItem(playlistId, postId)
+    }
+    
+  def getPersonComments(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      CommentQuery.getPersonComments(personId).map(items => Json.arr(items:_*))
+    }
+    
+  def updatePersonXxxContent(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap { json =>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      val xxxContent = json.hcursor.get[Int]("xxxContent").toOption.getOrElse(0)
+      
+      PersonQuery.updateXxxContent(personId, xxxContent)
+    }
 }
 
 

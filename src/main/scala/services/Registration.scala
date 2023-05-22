@@ -4,6 +4,8 @@ import services.ServiceList.User
 import io.circe.Json
 import io.circe.literal.json
 import cats.effect.*
+import data.sqlquery.PlaylistQuery
+
 import java.security.MessageDigest
 import java.sql.{Connection, DriverManager, SQLException}
 import java.util.Base64
@@ -96,13 +98,55 @@ object Registration {
 
         preparedStatement.executeUpdate()
 
-        Left( preparedStatement.close() )
+        preparedStatement.close()
+
+        foundUserAfterRegistration(user.login)
+
+        Left( () )
       }
       catch {
         case ex: SQLException => Right( ("Ошибка при добавлении пользователя в бд " + ex.getMessage, false) )
       }
 
     }
+
+  def foundUserAfterRegistration(login:String):Unit = {
+    val url = "jdbc:mysql://127.0.0.1/animeHub"
+    val username = "root"
+    val password = ",tkstudjplbrb"
+    Class.forName("com.mysql.cj.jdbc.Driver")
+    val connection = DriverManager.getConnection(url, username, password)
+
+    val sql = "SELECT id FROM user WHERE login = ?"
+    val statement = connection.prepareStatement(sql)
+    statement.setString(1, login)
+    val resultSet = statement.executeQuery
+
+    if (resultSet.next())
+      val id = resultSet.getInt("id")
+      connection.close()
+      addDefaultPlaylists(id)
+
+  }
+
+  def addDefaultPlaylists(userId:Int):Unit = {
+    val url = "jdbc:mysql://127.0.0.1/animeHub"
+    val username = "root"
+    val password = ",tkstudjplbrb"
+    Class.forName("com.mysql.cj.jdbc.Driver")
+    val connection = DriverManager.getConnection(url, username, password)
+
+    val names = Array("Просмотрено", "Буду смотреть", "Смотрю")
+    names.foreach( name =>
+      val sql = s"INSERT INTO playlist (title, user_id, is_private) VALUES (?,?,?)"
+      val preparedStatement = connection.prepareStatement(sql)
+      preparedStatement.setString(1, name)
+      preparedStatement.setInt(2,userId)
+      preparedStatement.setInt(3, 1)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    )
+  }
   def passHash(password:String):String={
     val md = MessageDigest.getInstance("SHA-256")
     val bytes = md.digest(password.getBytes("UTF-8"))

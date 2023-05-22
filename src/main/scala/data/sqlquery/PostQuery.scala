@@ -19,9 +19,19 @@ import services.PhotoService
 
 import java.util.Base64
 object PostQuery{
+
+  val xa = Transactor.fromDriverManager[IO](
+    "com.mysql.cj.jdbc.Driver",
+    "jdbc:mysql://127.0.0.1/animeHub",
+    "root",
+    ",tkstudjplbrb",
+  )
   case class Post(id:Int, createdAt:String, title:String, description:String, year:String, imagePath:String,
                   videoPath:String, episodeCount:Int, episodeDuration:Int, userId:Int, typeId:Int, rating:Double, xxxContent:Int, genreId:Int)
 
+  case class PostPage(id: Int, createdAt: String, title: String, description: String, year: String, imagePath: String,
+                  videoPath: String, episodeCount: Int, episodeDuration: Int, userId: Int, typeId: Int, rating: Double, xxxContent: Int, genreId: Int,
+                      genreName:String, typeName:String, countLike:Int)
   def getPostList: IO[List[Json]] =
 
      getPostListDB.flatMap{
@@ -37,13 +47,6 @@ object PostQuery{
     }
  private def getPostListDB: IO[Either[List[Post], String]] =
 
-   val xa = Transactor.fromDriverManager[IO](
-     "com.mysql.cj.jdbc.Driver",
-     "jdbc:mysql://127.0.0.1/animeHub",
-     "root",
-     ",tkstudjplbrb",
-   )
-
    sql"SELECT * FROM post LIMIT 10"
      .query[Post]
      .to[List]
@@ -53,34 +56,22 @@ object PostQuery{
 
  def getPostById(id:Int):IO[Json] =
 
-   val xa = Transactor.fromDriverManager[IO](
-     "com.mysql.cj.jdbc.Driver",
-     "jdbc:mysql://127.0.0.1/animeHub",
-     "root",
-     ",tkstudjplbrb",
-   )
-
-   sql"SELECT * FROM post WHERE id = $id"
-     .query[Post]
+   sql"SELECT post.id, post.created_at, post.title, post.description, post.year, post.image_path, post.video_path, post.episode_count, post.episode_duration, post.user_id, post.type_id, post.rating, post.xxx_content, post.genre_id, genre.name, `type`.name, post.people_count_like  FROM post JOIN genre ON post.genre_id = genre.id JOIN `type` ON post.type_id = `type`.id WHERE post.id = $id"
+     .query[PostPage]
      .option
      .transact(xa)
      .map {
-       case Some(post:Post) => json"""{ "id": ${post.id},"createdAt": ${post.createdAt}, "title": ${post.title},
+       case Some(post:PostPage) => json"""{ "id": ${post.id},"createdAt": ${post.createdAt}, "title": ${post.title},
                "description": ${post.description},"year": ${post.year}, "imagePath": ${post.imagePath},
                  "videoPath": ${post.videoPath},"episodeCount": ${post.episodeCount}, "episodeDuration":${post.episodeDuration},
-                   "userId": ${post.userId}, "typeId": ${post.typeId}, "rating": ${post.rating}, "xxxPostContent": ${post.xxxContent}, "genreId": ${post.genreId} }"""
+                   "userId": ${post.userId}, "typeId": ${post.typeId}, "rating": ${post.rating}, "xxxPostContent": ${post.xxxContent}, "genreId": ${post.genreId},
+                   "typeName": ${post.typeName}, "genreName": ${post.genreName}, "countLike": ${post.countLike} }"""
 
        case None => json"""{"postGetError": "Такого поста не существует"}"""
 
      }
+     .handleErrorWith(ex => IO.pure(json"""{"exception": ${ex.getMessage}}"""))
   def getPostList(filterType:Int, filterGenre:Int, sort:Int, sortBy:Int):IO[List[Json]] =
-
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
 
     getSqlQueryForFilter(filterType, filterGenre, sort, sortBy)
       .query[Post]
@@ -127,13 +118,7 @@ object PostQuery{
 
 
   def getPostList(titleSearchValue: String): IO[List[Json]] =
-
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
+    
     val searchTitle = titleSearchValue + "%"
 
     sql"SELECT * FROM post WHERE `title` LIKE $searchTitle LIMIT 10"
@@ -157,14 +142,19 @@ object PostQuery{
     val imagePath = PhotoService.uploadPostPhoto(Base64.getDecoder.decode(image), title )
     val videoPath = ""
 
-    val xa = Transactor.fromDriverManager[IO](
-      "com.mysql.cj.jdbc.Driver",
-      "jdbc:mysql://127.0.0.1/animeHub",
-      "root",
-      ",tkstudjplbrb",
-    )
-
     sql"INSERT INTO `post` (`title`, `description`, `year`, `image_path`, `video_path`, `episode_count`, `episode_duration`, `user_id`, `type_id`, `rating`, `xxx_content`, `genre_id`) VALUES ($title, $description, $year, $imagePath, $videoPath, $episodeCount, $episodeDuration, $userId, $typeId, 0, $xxxContent, $genreId )"
+      .update
+      .run
+      .transact(xa)
+      .attemptSql
+      .map {
+        case Right(_) => json"""{"success": "true"}"""
+        case Left(e) => json"""{"success":  "false"}"""
+      }
+
+  def setRating(postId:Int, rating:Int, personId:Int):IO[Json]=
+
+    sql"UPDATE `post` SET rating_count = rating_count + $rating, people_count_like = people_count_like + 1 WHERE post.id = $postId; INSERT INTO user_rating_post (user_id, post_id) VALUES ($personId, $postId)"
       .update
       .run
       .transact(xa)
