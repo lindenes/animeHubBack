@@ -11,6 +11,7 @@ import org.http4s.{Request, UrlForm}
 import services.Validation
 import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PlaylistQuery, PostQuery}
 import io.circe.syntax.*
+import data.sqlquery.PostQuery.Post
 object ServiceList {
   case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photo:String)
 
@@ -202,6 +203,34 @@ object ServiceList {
       val xxxContent = json.hcursor.get[Int]("xxxContent").toOption.getOrElse(0)
       
       PersonQuery.updateXxxContent(personId, xxxContent)
+    }
+
+  def deletePost(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+      PostQuery.deletePost(postId)
+    }
+
+  def updatePost(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+      val post = Post(
+        postId,
+        "",
+        json.hcursor.get[String]("title").toOption.getOrElse(""),
+        json.hcursor.get[String]("description").toOption.getOrElse(""),
+        json.hcursor.get[String]("year").toOption.getOrElse(""),
+        json.hcursor.get[String]("imagePath").toOption.getOrElse(""),
+        json.hcursor.get[String]("videoPath").toOption.getOrElse(""),
+        json.hcursor.get[Int]("episodeCount").toOption.getOrElse(0),
+        json.hcursor.get[Int]("episodeDuration").toOption.getOrElse(0),
+        json.hcursor.get[Int]("userId").toOption.getOrElse(0),
+        json.hcursor.get[Int]("typeId").toOption.getOrElse(0),
+        0.0,
+        json.hcursor.get[Int]("xxxContent").toOption.getOrElse(0),
+        json.hcursor.get[Int]("genreId").toOption.getOrElse(0),
+      )
+      PostQuery.updatePostInfo(postId, post)
     }
 }
 

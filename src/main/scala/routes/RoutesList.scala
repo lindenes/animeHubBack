@@ -67,6 +67,10 @@ object RoutesList {
         Ok( ServiceList.getPersonComments(req) )
       case req@POST -> Root / "updateXXX" =>
         Ok( ServiceList.updatePersonXxxContent(req) )
+      case req@POST -> Root / "deletePost" =>
+        Ok( ServiceList.deletePost(req) )
+      case req@POST -> Root / "updatePost" =>
+        Ok( ServiceList.updatePost(req) )
     }
     routes
 }

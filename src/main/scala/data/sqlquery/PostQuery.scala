@@ -167,6 +167,30 @@ object PostQuery{
         .attemptSql
     } yield json"""{"success": "true"}"""
 
+  def updatePostInfo(postId:Int, Post:Post):IO[Json]=
+    sql"UPDATE `post` SET title = ${Post.title}, description = ${Post.description}, year = ${Post.year}, image_path = ${Post.imagePath}, episode_count = ${Post.episodeCount}, episode_duration = ${Post.episodeDuration}, type_id = ${Post.typeId}, xxx_content = ${Post.xxxContent}, genre_id = ${Post.genreId} WHERE id = ${Post.id}"
+      .update
+      .run
+      .transact(xa)
+      .attemptSql
+      .map { _ => json"""{"success": "true"}""" }
+      .handleErrorWith(e => IO.pure(json"""{"success":  "false"}"""))
+
+  def deletePost(postId:Int):IO[Json]=
+    sql"DELETE FROM `post` WHERE id = $postId"
+      .update
+      .run
+      .transact(xa)
+      .attemptSql
+      .map{_ => json"""{"success": "true"}"""}
+      .handleErrorWith( e => IO.pure(json"""{"success":  "false"}"""))
+
+
+
+
+
+
+
 //  def getPostListJDBCAsync(): IO[Either[Post, String]] =
 //    val url = "jdbc:mysql://127.0.0.1/animeHub"
 //    val username = "root"
