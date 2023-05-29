@@ -30,7 +30,7 @@ object PostQuery{
                   videoPath:String, episodeCount:Int, episodeDuration:Int, userId:Int, typeId:Int, rating:Double, xxxContent:Int, genreId:Int)
 
   case class PostPage(id: Int, createdAt: String, title: String, description: String, year: String, imagePath: String,
-                  videoPath: String, episodeCount: Int, episodeDuration: Int, userId: Int, typeId: Int, rating: Double, xxxContent: Int, genreId: Int,
+                  videoPath: String, episodeCount: Int, episodeDuration: Int, userId: Int, typeId: Int, rating: Option[Double], xxxContent: Int, genreId: Int,
                       genreName:String, typeName:String, countLike:Int)
   def getPostList: IO[List[Json]] =
 
@@ -61,10 +61,11 @@ object PostQuery{
      .option
      .transact(xa)
      .map {
-       case Some(post:PostPage) => json"""{ "id": ${post.id},"createdAt": ${post.createdAt}, "title": ${post.title},
+       case Some(post:PostPage) => 
+         json"""{ "id": ${post.id},"createdAt": ${post.createdAt}, "title": ${post.title},
                "description": ${post.description},"year": ${post.year}, "imagePath": ${post.imagePath},
                  "videoPath": ${post.videoPath},"episodeCount": ${post.episodeCount}, "episodeDuration":${post.episodeDuration},
-                   "userId": ${post.userId}, "typeId": ${post.typeId}, "rating": ${post.rating}, "xxxPostContent": ${post.xxxContent}, "genreId": ${post.genreId},
+                   "userId": ${post.userId}, "typeId": ${post.typeId}, "rating": ${post.rating.getOrElse(0.0)}, "xxxPostContent": ${post.xxxContent}, "genreId": ${post.genreId},
                    "typeName": ${post.typeName}, "genreName": ${post.genreName}, "countLike": ${post.countLike} }"""
 
        case None => json"""{"postGetError": "Такого поста не существует"}"""
@@ -152,29 +153,18 @@ object PostQuery{
         case Left(e) => json"""{"success":  "false"}"""
       }
 
-  def setRating(postId:Int, rating:Int, personId:Int):IO[Json]=
-
-    for {
-      _ <- sql"UPDATE `post` SET rating_count = rating_count + $rating, people_count_like = people_count_like + 1 WHERE id = $postId"
-        .update
-        .run
-        .transact(xa)
-        .attemptSql
-      _ <- sql"INSERT INTO user_rating_post (user_id, post_id) VALUES ($personId, $postId)"
-        .update
-        .run
-        .transact(xa)
-        .attemptSql
-    } yield json"""{"success": "true"}"""
-
   def updatePostInfo(postId:Int, Post:Post):IO[Json]=
-    sql"UPDATE `post` SET title = ${Post.title}, description = ${Post.description}, year = ${Post.year}, image_path = ${Post.imagePath}, episode_count = ${Post.episodeCount}, episode_duration = ${Post.episodeDuration}, type_id = ${Post.typeId}, xxx_content = ${Post.xxxContent}, genre_id = ${Post.genreId} WHERE id = ${Post.id}"
+
+    sql"UPDATE `post` SET title = ${Post.title}, description = ${Post.description}, year = ${Post.year}, episode_count = ${Post.episodeCount}, episode_duration = ${Post.episodeDuration}, type_id = ${Post.typeId}, xxx_content = ${Post.xxxContent}, genre_id = ${Post.genreId} WHERE id = ${Post.id}"
       .update
       .run
       .transact(xa)
       .attemptSql
-      .map { _ => json"""{"success": "true"}""" }
-      .handleErrorWith(e => IO.pure(json"""{"success":  "false"}"""))
+      .map {
+        case Right(_) => json"""{"success": "true"}"""
+        case Left(e) => json"""{"success":  "false"}"""
+      }
+      .handleErrorWith( e => IO.pure(json"""{"success":  "false"}"""))
 
   def deletePost(postId:Int):IO[Json]=
     sql"DELETE FROM `post` WHERE id = $postId"

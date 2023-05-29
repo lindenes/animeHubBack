@@ -23,8 +23,8 @@ object CommentQuery {
       .query[Comment]
       .to[List]
       .transact(xa)
-      .map( posts => json"""{"Comments": ${
-        posts.map{
+      .map( comments => json"""{"Comments": ${
+        comments.map{
           elem=>
             json"""{"commentId": ${elem.id}, "createdAt":  ${elem.createdAt}, "text":  ${elem.text}, "userId": ${elem.userId}, "postId":  ${elem.postId}, "userLogin":  ${elem.login}, "imagePath":  ${elem.avatarPath}}"""
         }
@@ -48,7 +48,7 @@ object CommentQuery {
 
   def getPersonComments(personId:Int):IO[List[Json]]=
 
-    sql"SELECT * FROM `comment` WHERE user_id = $personId"
+    sql"SELECT comment.*, user.login, user.avatar_path FROM comment INNER JOIN user ON comment.user_id = user.id WHERE comment.user_id = $personId"
       .query[Comment]
       .to[List]
       .transact(xa)

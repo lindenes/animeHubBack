@@ -71,6 +71,14 @@ object RoutesList {
         Ok( ServiceList.deletePost(req) )
       case req@POST -> Root / "updatePost" =>
         Ok( ServiceList.updatePost(req) )
+      case req@POST -> Root / "getPostPersonRating" =>
+        Ok( ServiceList.getPersonPostRating(req) )
+      case req@POST -> Root / "updatePersonPostRating" =>
+        Ok( ServiceList.updatePersonPostRating(req) )
+      case GET -> Root / "parall" =>
+        Ok ( ServiceList.parallelFunc() )
+      case GET -> Root / "nonParall" =>
+        Ok(ServiceList.nonParalle())
     }
     routes
 }

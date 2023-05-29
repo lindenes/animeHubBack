@@ -2,6 +2,7 @@ package services
 
 import cats.Applicative
 import cats.effect.{IO, Sync}
+import cats.implicits._
 import data.PersonRole
 import io.circe.*
 import io.circe.literal.*
@@ -9,7 +10,7 @@ import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.jsonOf
 import org.http4s.{Request, UrlForm}
 import services.Validation
-import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PlaylistQuery, PostQuery}
+import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PlaylistQuery, PostQuery, RatingQuery}
 import io.circe.syntax.*
 import data.sqlquery.PostQuery.Post
 object ServiceList {
@@ -174,7 +175,7 @@ object ServiceList {
       val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
       val rating = json.hcursor.get[Int]("rating").toOption.getOrElse(0)
 
-      PostQuery.setRating(postId, rating, personId)
+      RatingQuery.setRating(postId, rating, personId)
     }
     
   def dropPersonPlaylist(req:Request[IO]):IO[Json] =
@@ -231,6 +232,36 @@ object ServiceList {
         json.hcursor.get[Int]("genreId").toOption.getOrElse(0),
       )
       PostQuery.updatePostInfo(postId, post)
+    }
+
+  def getPersonPostRating(req: Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+
+      RatingQuery.getPersonPostRating(personId, postId)
+    }
+
+  def updatePersonPostRating(req: Request[IO]): IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
+      val rating = json.hcursor.get[Int]("rating").toOption.getOrElse(0)
+
+      RatingQuery.updatePersonPostRating(personId, postId, rating)
+    }
+
+  def parallelFunc():IO[Json]=
+    (PersonQuery.getPersonList(1), PostQuery.getPostList).parMapN { (a, b) =>
+      Json.arr(a:::b:_*)
+    }
+
+  def nonParalle():IO[Json] =
+    for{
+      persQ <- PersonQuery.getPersonList(1)
+      postList <- PostQuery.getPostList
+    }yield{
+      Json.arr(persQ:::postList:_*)
     }
 }
 
