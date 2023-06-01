@@ -23,10 +23,6 @@ object RoutesList {
     val routes: HttpRoutes[IO] = HttpRoutes.of[IO] {
       case GET -> Root / "test" =>
         Ok(ServiceList.testMethod())
-      case req@POST -> Root / "signup" =>
-        Ok( ServiceList.doRegistration(req) )
-      case req@POST -> Root / "login" =>
-        Ok ( ServiceList.doAuthorization(req) )
       case GET -> Root / "posts" =>
         Ok ( ServiceList.getPosts )
       case GET -> Root / "post" / IntVar(id) =>
@@ -53,32 +49,46 @@ object RoutesList {
         Ok( ServiceList.getUserList(req) )
       case req@POST -> Root / "roleList" =>
         Ok( ServiceList.getRoleList(req) )
-      case req@POST -> Root / "updateRole" =>
-        Ok( ServiceList.updatePersonRole(req) )
       case req@POST -> Root / "postsPlaylists" =>
         Ok( ServiceList.getPlaylistFromPost(req) )
       case req@POST -> Root / "setRating" =>
         Ok( ServiceList.setPostRating(req) )
-      case req@POST -> Root / "dropPlaylist" =>
-        Ok( ServiceList.dropPersonPlaylist(req) )
-      case req@POST -> Root / "dropPlaylistItem" =>
-        Ok( ServiceList.dropPlaylistItem(req) )
-      case req@POST -> Root / "getPersonComment" =>
-        Ok( ServiceList.getPersonComments(req) )
-      case req@POST -> Root / "updateXXX" =>
-        Ok( ServiceList.updatePersonXxxContent(req) )
       case req@POST -> Root / "deletePost" =>
         Ok( ServiceList.deletePost(req) )
       case req@POST -> Root / "updatePost" =>
         Ok( ServiceList.updatePost(req) )
-      case req@POST -> Root / "getPostPersonRating" =>
-        Ok( ServiceList.getPersonPostRating(req) )
-      case req@POST -> Root / "updatePersonPostRating" =>
-        Ok( ServiceList.updatePersonPostRating(req) )
       case GET -> Root / "parall" =>
         Ok ( ServiceList.parallelFunc() )
       case GET -> Root / "nonParall" =>
         Ok(ServiceList.nonParalle())
+      case req@POST -> Root / "addReport" =>
+        Ok( ServiceList.addReport(req) )
+      case req@POST  -> Root / "getReports"  => 
+        Ok( ServiceList.getReportList(req) )
+      case req@POST -> Root / "delReportComment" =>
+        Ok( ServiceList.delReportComment(req) )
     }
-    routes
+
+    val personRoutes:HttpRoutes[IO] = HttpRoutes.of[IO]{
+      case req@POST -> Root / "signup" =>
+        Ok(ServiceList.doRegistration(req))
+      case req@POST -> Root / "login" =>
+        Ok(ServiceList.doAuthorization(req))
+      case req@POST -> Root / "getPostPersonRating" =>
+        Ok(ServiceList.getPersonPostRating(req))
+      case req@POST -> Root / "updatePersonPostRating" =>
+        Ok(ServiceList.updatePersonPostRating(req))
+      case req@POST -> Root / "updateRole" =>
+        Ok(ServiceList.updatePersonRole(req))
+      case req@POST -> Root / "dropPlaylist" =>
+        Ok(ServiceList.dropPersonPlaylist(req))
+      case req@POST -> Root / "dropPlaylistItem" =>
+        Ok(ServiceList.dropPlaylistItem(req))
+      case req@POST -> Root / "getPersonComment" =>
+        Ok(ServiceList.getPersonComments(req))
+      case req@POST -> Root / "updateXXX" =>
+        Ok(ServiceList.updatePersonXxxContent(req))
+    }
+    
+    routes <+> personRoutes
 }

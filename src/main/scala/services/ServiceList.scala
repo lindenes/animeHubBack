@@ -2,7 +2,7 @@ package services
 
 import cats.Applicative
 import cats.effect.{IO, Sync}
-import cats.implicits._
+import cats.implicits.*
 import data.PersonRole
 import io.circe.*
 import io.circe.literal.*
@@ -10,7 +10,7 @@ import org.http4s.circe.CirceEntityCodec.circeEntityDecoder
 import org.http4s.circe.jsonOf
 import org.http4s.{Request, UrlForm}
 import services.Validation
-import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PlaylistQuery, PostQuery, RatingQuery}
+import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PlaylistQuery, PostQuery, RatingQuery, ReportsQuery}
 import io.circe.syntax.*
 import data.sqlquery.PostQuery.Post
 object ServiceList {
@@ -262,6 +262,32 @@ object ServiceList {
       postList <- PostQuery.getPostList
     }yield{
       Json.arr(persQ:::postList:_*)
+    }
+
+  def addReport(req: Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val commentId = json.hcursor.get[Int]("commentId").toOption.getOrElse(0)
+
+      ReportsQuery.addReport(commentId)
+    }
+
+  def getReportList(req: Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val personId = json.hcursor.get[Int]("personId").toOption.getOrElse(0)
+      ReportsQuery.getReportList(personId).map(items => Json.arr(items:_*))
+    }
+
+  def delReportComment(req:Request[IO]):IO[Json] =
+    req.as[Json].flatMap{ json =>
+      val commentId = json.hcursor.get[Int]("commentId").toOption.getOrElse(0)
+      val reportId = json.hcursor.get[Int]("reportId").toOption.getOrElse(0)
+
+      (CommentQuery.delComment(commentId), ReportsQuery.delReport(reportId)).parMapN{(a,b) => 
+        if(a && b)
+          json"""{"success": "true"}"""
+        else
+          json"""{"success": "false"}"""
+      }
     }
 }
 

@@ -15,7 +15,7 @@ object CommentQuery {
     "root",
     ",tkstudjplbrb",
   )
-  case class Comment(id:Int, createdAt:String, text:String, userId:String, postId:String, login:String, avatarPath:String)
+  case class Comment(id:Int, createdAt:String, text:String, userId:String, postId:String, login:String, avatarPath:String, title:String)
 
   def getCommentList(postId:Int):IO[Json]=
 
@@ -48,15 +48,27 @@ object CommentQuery {
 
   def getPersonComments(personId:Int):IO[List[Json]]=
 
-    sql"SELECT comment.*, user.login, user.avatar_path FROM comment INNER JOIN user ON comment.user_id = user.id WHERE comment.user_id = $personId"
+    sql"SELECT comment.*, user.login, user.avatar_path, post.title FROM comment INNER JOIN user ON comment.user_id = user.id INNER JOIN post ON post.id = comment.post_id WHERE comment.user_id = $personId"
       .query[Comment]
       .to[List]
       .transact(xa)
       .map{ comments =>
         comments.map( comment =>
-          json"""{"commentId": ${comment.id}, "createdAt":  ${comment.createdAt}, "text":  ${comment.text}, "userId": ${comment.userId}, "postId":  ${comment.postId}, "userLogin":  ${comment.login}, "imagePath":  ${comment.avatarPath}}"""
+          json"""{"commentId": ${comment.id}, "createdAt":  ${comment.createdAt}, "text":  ${comment.text}, "title":${comment.title}, "userId": ${comment.userId}, "postId":  ${comment.postId}, "userLogin":  ${comment.login}, "imagePath":  ${comment.avatarPath}}"""
         )
       }
       .handleErrorWith(e => IO.pure( List.empty[Json] ))
+
+  def delComment(commentId: Int): IO[Boolean] =
+
+    sql"DELETE FROM `comment` WHERE id=$commentId"
+      .update
+      .run
+      .transact(xa)
+      .attemptSql
+      .map {
+        case Right(_) => true
+        case Left(e) => false
+      }
     
 }
