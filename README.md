@@ -32,7 +32,7 @@ Libraries:
   - Warning: this may be painful.
 
 ## Localization
-Also, would be nice to be able to conveniently switch the language through env var.
+Also, would be nice to be able to conveniently switch the language through environment variables.
 
 For example:
 ```scala
