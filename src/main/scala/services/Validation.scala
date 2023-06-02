@@ -1,87 +1,83 @@
 package services
 
+import cats.data.Validated
+import cats.data.ValidatedNec
+import cats.syntax.all.*
+import cats.syntax.validated.*
+import io.circe.syntax.*
+import io.circe.Encoder
 import io.circe.Json
-import io.circe.literal.json
 import services.ServiceList.User
 
-import java.sql.DriverManager
+object Validation:
 
-class Validation {
-  //case class RegUser(id: Int, login: String, password: String, age: Int, photo: Option[String])
-  case class validationInfo(passwordError:List[String], loginError:List[String], ageError:List[String], mailError:List[String])
-  def checkValidation(user: User): (Json, Boolean) = {
- 
+  private case class ValidationInfo(
+      passwordError: List[String],
+      loginError: List[String],
+      ageError: List[String],
+      mailError: List[String],
+  )
+
+  private object ValidationInfo:
+
+    val empty: ValidationInfo =
+      ValidationInfo(List.empty, List.empty, List.empty, List.empty)
+
+    given Encoder[ValidationInfo] = Encoder
+      .forProduct4("passwordError", "loginError", "ageError", "mailError")(
+        validationInfo =>
+          (
+            validationInfo.passwordError,
+            validationInfo.loginError,
+            validationInfo.ageError,
+            validationInfo.mailError,
+          )
+      )
+
+  def checkValidation(user: User): (Json, Boolean) =
+
     val passwordCheck = passwordChecker(user)
     val loginCheck = loginChecker(user)
     val ageCheck = ageChecker(user)
     val mailCheck = mailChecker(user)
-    
-    val validation = validationInfo(
-      passwordCheck._1,
-      loginCheck._1,
-      ageCheck._1,
-      mailCheck._1
+
+    val validation = ValidationInfo(
+      passwordCheck.fold(_.toList, _ => List.empty),
+      loginCheck.fold(_.toList, _ => List.empty),
+      ageCheck.fold(_.toList, _ => List.empty),
+      mailCheck.fold(_.toList, _ => List.empty),
     )
-    val successful = passwordCheck._2 && loginCheck._2 && ageCheck._2 && mailCheck._2
 
-    ( json"""{"passwordError": ${validation.passwordError}, "loginError": ${validation.loginError}, 
-          "mailError": ${validation.mailError}, "ageError":  ${validation.ageError}}""", successful )
-  }
+    val successful = (passwordCheck, loginCheck, ageCheck, mailCheck)
+      .mapN((_, _, _, _) => ())
+      .isValid
 
-    def passwordChecker(user:User): (List[String], Boolean) =
-      
-      var errorList = List.empty[String]
-      
-      if(user.password != user.passwordRepeat)
-        errorList = errorList :+ "Пароли не совпадают"
-        
-      if (user.password == "" || user.password.isEmpty )
-        errorList = errorList :+ "Пустое значение"
-        
-      if(user.password.length < 7)
-        errorList = errorList :+ "Пароль должен быть длиннее 7 символов"
-        
-      if(errorList.isEmpty) 
-        (errorList, true)
-      else
-        (errorList, false)
-  
-  def loginChecker(user:User): (List[String], Boolean)=
-    var errorList = List.empty[String]
-    
-    if(user.login.length < 6)
-      errorList = errorList :+ "Логин должен быть длиннее 6 символов"
+    (validation.asJson, successful)
 
-    if (errorList.isEmpty)
-      (errorList, true)
-    else
-      (errorList, false)
-  def ageChecker(user:User): (List[String], Boolean)=
+  private def passwordChecker(user: User): ValidatedNec[String, Unit] = (
+    if user.password != user.passwordRepeat then
+      "Passwords are not equals".invalidNec
+    else ().validNec,
+    if user.password == "" || user.password.isEmpty then
+      "Empty value".invalidNec
+    else ().validNec,
+    if user.password.length < 7 then
+      "Password must be longer than 7 characters".invalidNec
+    else ().validNec,
+  ).mapN((_, _, _) => ())
 
-    var errorList = List.empty[String]
+  private def loginChecker(user: User): ValidatedNec[String, Unit] =
+    if user.login.length < 6 then
+      "Login must be longer than 6 characters".invalidNec
+    else ().validNec
 
-    if( user.age.getOrElse(0) >= 100 || user.age.getOrElse(0) <= 7 ){
-      errorList= errorList :+ "Ваш возрост не может быть больше 100 или меньше 7"
-    }
+  private def ageChecker(user: User): ValidatedNec[String, Unit] =
+    if user.age.getOrElse(0) >= 100 || user.age.getOrElse(0) <= 7 then
+      "Age must be in between 7 and 100".invalidNec
+    else ().validNec
 
-    if(errorList.isEmpty){
-      (errorList, true)
-    }
-    else{
-      (errorList, false)
-    }
-
-  def mailChecker(user:User):(List[String], Boolean)=
-    var errorList = List.empty[String]
-
+  private def mailChecker(user: User): ValidatedNec[String, Unit] =
     val emailRegex = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$".r
-    emailRegex.findFirstMatchIn(user.email) match {
-      case Some(_) =>
-        (errorList,true)
-      case None =>
-        errorList = errorList :+ "Вы ввели некоректный email"
-        (errorList, false)
-    }
-
-
-}
+    emailRegex.findFirstMatchIn(user.email) match
+      case Some(_) => ().validNec
+      case None => "Incorrect email".invalidNec

@@ -1,33 +1,23 @@
-import cats.effect.IOApp
+import _root_.routes.RoutesList
 import cats.effect.*
 import com.comcast.ip4s.*
-import org.http4s.{HttpRoutes, Uri}
-import org.http4s.dsl.io.*
-import org.http4s.implicits.*
 import org.http4s.ember.server.*
-import org.http4s.server.middleware.{CORS, CORSPolicy}
-import org.http4s.headers.Origin
-import services.ServiceList
-import routes.RoutesList
-object Main extends IOApp {
+import org.http4s.implicits.*
+import org.http4s.server.middleware.CORS
+import org.http4s.server.middleware.CORSPolicy
 
-  val cors: CORSPolicy = CORS.policy.withAllowOriginHost(Set(
-    Origin.Host(Uri.Scheme.http, Uri.RegName("10.0.0.33"), Some(3000)),
-    Origin.Host(Uri.Scheme.http, Uri.RegName("localhost"), Some(3000))
-  ))
+object Main extends IOApp:
+
+  private val cors2: CORSPolicy = CORS
+    .policy
+    .withAllowOriginAll
     .withAllowCredentials(false)
 
-  val cors2: CORSPolicy = CORS.policy.withAllowOriginAll
-    .withAllowCredentials(false)
-
-  def run(args: List[String]): IO[ExitCode] =
-    EmberServerBuilder
-      .default[IO]
-      .withHost(ipv4"0.0.0.0")
-      .withPort(port"5000")
-      .withHttpApp( cors2 (RoutesList.getRouteList.orNotFound) )
-      .build
-      .use(_ => IO.never)
-      .as(ExitCode.Success)
-
-}
+  def run(args: List[String]): IO[ExitCode] = EmberServerBuilder
+    .default[IO]
+    .withHost(ipv4"0.0.0.0")
+    .withPort(port"5000")
+    .withHttpApp(cors2(RoutesList.getRouteList.orNotFound))
+    .build
+    .use(_ => IO.never)
+    .as(ExitCode.Success)
