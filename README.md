@@ -26,6 +26,7 @@ Libraries:
 - [ ] Pass configuration as environment variables.
 - [ ] Packaging, e.g. [Docker](https://www.docker.com/) / [Docker Compose](https://docs.docker.com/compose/): [sbt-docker](https://github.com/marcuslonnberg/sbt-docker), [sbt-native-packager](https://github.com/sbt/sbt-native-packager).
 - [ ] CI using GitHub Actions - you could use the newly defined `sbt validate`.
+- [ ] Automatically issue, and perhaps merge / deploy (if passes the CI checks), PRs with dependencies updates using [Scala Steward](https://github.com/scala-steward-org/scala-steward).
 - [ ] Deploy it somewhere.
 - [ ] Probably: compile to a native, dynamic or static, executable, e.g. using [GraalVM](https://www.graalvm.org/latest/reference-manual/native-image/): [sbt-native-image](https://github.com/scalameta/sbt-native-image), [sbt-native-packager](https://github.com/sbt/sbt-native-packager) or [Scala Native](https://scala-native.org/en/stable/).
   - Warning: this may be painful.
