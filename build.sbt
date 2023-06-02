@@ -4,12 +4,12 @@ ThisBuild / version    := "0.1.0-SNAPSHOT"
 ThisBuild / bspEnabled := true
 
 addCommandAlias(
-  "dependencyCheck",
+  "dependencyCheck", // To get all-at-once dependencies and SBT plugins report
   List(
-    "reload plugins",    // check SBT plugin updates
+    "reload plugins",    // Check SBT plugin updates
     "dependencyUpdates",
     "reload return",
-    "dependencyUpdates", // check project deps updates
+    "dependencyUpdates", // Check project deps updates
     "undeclaredCompileDependencies",
     "unusedCompileDependencies",
   ).mkString(";"),
@@ -69,7 +69,7 @@ lazy val root = (project in file(".")).settings(
     "-unchecked",
   ),
   scalaVersion        := versions.scala,
-  semanticdbEnabled   := true,
+  semanticdbEnabled   := true, // Required by Scalafix
   validate            := {
     (Test / test).value
     (Compile / scalafmtSbtCheck).value
