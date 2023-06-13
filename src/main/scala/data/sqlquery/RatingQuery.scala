@@ -54,7 +54,7 @@ object RatingQuery {
         .run
         .transact(xa)
         .attemptSql
-      _ <- sql"UPDATE `post` SET rating = rating - $personRating + $rating WHERE id=$postId"
+      _ <- sql"UPDATE `post` SET rating = rating_count - $personRating + $rating WHERE id=$postId"
         .update
         .run
         .transact(xa)

@@ -15,7 +15,9 @@ object CommentQuery {
     "root",
     ",tkstudjplbrb",
   )
-  case class Comment(id:Int, createdAt:String, text:String, userId:String, postId:String, login:String, avatarPath:String, title:String)
+  case class Comment(id:Int, createdAt:String, text:String, userId:String, postId:String, login:String, avatarPath:String)
+
+  case class personComment(id:Int, createdAt:String, text:String, userId:String, postId:String, login:String, avatarPath:String, title:String)
 
   def getCommentList(postId:Int):IO[Json]=
 
@@ -33,7 +35,6 @@ object CommentQuery {
       .handleErrorWith(
         e => IO.pure(json"""{"getCommentError":"Ошибка вывода комментариев", "details": ${e.toString}}""")
       )
-
   def addComment(userId: Int, postId: Int, text:String):IO[Json] =
 
     sql"INSERT INTO `comment` (`text`, `user_id`, `post_id`) VALUES ($text, $userId, $postId)"
@@ -49,7 +50,7 @@ object CommentQuery {
   def getPersonComments(personId:Int):IO[List[Json]]=
 
     sql"SELECT comment.*, user.login, user.avatar_path, post.title FROM comment INNER JOIN user ON comment.user_id = user.id INNER JOIN post ON post.id = comment.post_id WHERE comment.user_id = $personId"
-      .query[Comment]
+      .query[personComment]
       .to[List]
       .transact(xa)
       .map{ comments =>
@@ -62,6 +63,17 @@ object CommentQuery {
   def delComment(commentId: Int): IO[Boolean] =
 
     sql"DELETE FROM `comment` WHERE id=$commentId"
+      .update
+      .run
+      .transact(xa)
+      .attemptSql
+      .map {
+        case Right(_) => true
+        case Left(e) => false
+      }
+
+  def delComments(postId:Int):IO[Boolean]=
+    sql"DELETE FROM `comment` WHERE post_id=$postId"
       .update
       .run
       .transact(xa)

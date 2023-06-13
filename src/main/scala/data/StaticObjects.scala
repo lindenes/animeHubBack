@@ -1,43 +1,24 @@
 package data
 
-object PersonRole extends Enumeration{
-  type PersonRole = Value
+enum PersonRole(val roleName: String):
+  case Unknown extends PersonRole("Неизвестно")
+  case Guest extends PersonRole("Гость")
+  case SimpleUser extends PersonRole("Пользователь")
+  case Moderator extends PersonRole("Модератор")
+  case Admin extends PersonRole("Администратор")
 
-  val Unknown = Value(0, "Неизвестно")
-  val Guest = Value(1, "Гость")
-  val simpleUser = Value(2, "Пользователь")
-  val Moderator = Value(3, "Модератор")
-  val Admin = Value(4, "Администратор")
+enum XXXContent(val description:String):
 
-  def roleList = List(Unknown, Guest, simpleUser, Moderator, Admin)
-}
-object XXXContent extends Enumeration{
-  type XXXContent = Value
+  case notXXX extends XXXContent("Нет контента 18+")
+  case yesXXX extends XXXContent("Есть контент 18+")
+enum SortBy(val field: String):
 
-  val notXXX = Value(0, "Нет контента 18+")
-  val yesXXX = Value(1, "Есть контент 18+")
+  case Default extends SortBy("")
+  case Year extends SortBy("year")
+  case EpisodeCount extends SortBy("episode_count")
+  case Title extends SortBy("title")
+  case Rating extends SortBy("rating")
 
-  def XXXTypeList = List(notXXX, yesXXX)
-}
-
-object Sort extends Enumeration {
-  type Sort = Value
-
-  val default = Value (0, "")
-  //val date = Value(1, "created_at")
-  val year = Value (1, "year")
-  val episodeCount = Value(2, "episode_count")
-  val title = Value(3, "title")
-  val rating = Value(4, "rating")
- // val year = Value (5, "year")
-
-  def sortList = List(default, title, episodeCount, rating, year)
-}
-object SortBy extends Enumeration{
-  type SortBy = Value
-
-  val byAsk = Value (0, "ASC")
-  val byDesk = Value(1, "DESC")
-
-  def SortByList = List(byAsk, byDesk)
-}
+enum OrderBy(val value: String):
+  case Asc extends OrderBy("ASC")
+  case Desc extends OrderBy("DESC")

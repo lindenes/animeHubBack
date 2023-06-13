@@ -86,12 +86,15 @@ object Registration {
         val sql = "INSERT INTO user (login, email, password_hash, age, avatar_path, role, xxx_content) VALUES (?, ?, ?, ? ,?, ?, ?)"
         val preparedStatement = connection.prepareStatement(sql)
         
-        val photoPath = PhotoService.uploadAvatarPhoto( Base64.getDecoder.decode(user.photo), user.login )
+        val photoPath = if(user.photo.nonEmpty)
+          PhotoService.uploadAvatarPhoto( Base64.getDecoder.decode(user.photo.get), user.login )
+        else
+          ""
 
         preparedStatement.setString(1, user.login)
         preparedStatement.setString(2, user.email)
         preparedStatement.setString(3, passHash(user.password) )
-        preparedStatement.setInt(4, user.age.getOrElse(0) )
+        preparedStatement.setString(4, user.age.getOrElse("1900-01-01") )
         preparedStatement.setString(5, photoPath)
         preparedStatement.setInt(6, 2)
         preparedStatement.setInt(7, 0)

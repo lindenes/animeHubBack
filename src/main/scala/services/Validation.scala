@@ -3,6 +3,8 @@ package services
 import io.circe.Json
 import io.circe.literal.json
 import services.ServiceList.User
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 import java.sql.DriverManager
 
@@ -60,14 +62,24 @@ class Validation {
 
     var errorList = List.empty[String]
 
-    if( user.age.getOrElse(0) >= 100 || user.age.getOrElse(0) <= 7 ){
-      errorList= errorList :+ "Ваш возрост не может быть больше 100 или меньше 7"
-    }
+    if(user.age.get != ""){
+      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+      val date = LocalDate.parse(user.age.getOrElse(""), formatter)
+      val currentDate = LocalDate.now()
 
-    if(errorList.isEmpty){
-      (errorList, true)
-    }
-    else{
+      val age = currentDate.getYear - date.getYear
+
+      if (age > 100 || age < 7) {
+        errorList = errorList :+ "Ваш возраст не может быть больше 100 или меньше 7"
+      }
+
+      if (errorList.isEmpty) {
+        (errorList, true)
+      } else {
+        (errorList, false)
+      }
+    }else{
+      errorList = errorList :+ "Введите возраст"
       (errorList, false)
     }
 

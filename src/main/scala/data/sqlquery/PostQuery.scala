@@ -1,6 +1,7 @@
 package data.sqlquery
 
 import cats.effect.{ExitCode, IO, IOApp}
+import data.{OrderBy, SortBy, XXXContent}
 import org.http4s.Request
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,7 +15,6 @@ import io.circe.syntax.*
 import data.sqlquery.PersonQuery.UserInfo
 
 import java.sql.{DriverManager, SQLException}
-import data.{Sort, SortBy}
 import services.PhotoService
 
 import java.util.Base64
@@ -26,7 +26,10 @@ object PostQuery{
     "root",
     ",tkstudjplbrb"
   )
-  case class Post(id:Int, createdAt:String, title:String, description:String, year:String, imagePath:String,
+
+  case class Post(id: Int, createdAt: String, title: String, description: String, year: String, imagePath: String,
+                  videoPath: String, episodeCount: Int, episodeDuration: Int, userId: Int, typeId: Int, xxxContent: Int, genreId: Int, ratingCount: Int, countLike: Int, rating: Double)
+  case class UpdatePost(id:Int, createdAt:String, title:String, description:String, year:String, imagePath:String,
                   videoPath:String, episodeCount:Int, episodeDuration:Int, userId:Int, typeId:Int, rating:Double, xxxContent:Int, genreId:Int)
 
   case class PostPage(id: Int, createdAt: String, title: String, description: String, year: String, imagePath: String,
@@ -72,27 +75,34 @@ object PostQuery{
 
      }
      .handleErrorWith(ex => IO.pure(json"""{"exception": ${ex.getMessage}}"""))
-  def getPostList(filterType:Int, filterGenre:Int, sort:Int, sortBy:Int):IO[List[Json]] =
+  def getPostList(filterType:Int, filterGenre:Int, sort:Int, sortBy:Int, userId:Int):IO[List[Json]] =
 
-    getSqlQueryForFilter(filterType, filterGenre, sort, sortBy)
-      .query[Post]
-      .to[List]
-      .transact(xa)
-      .map{ posts => posts.map { elem =>
-        json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
-                     "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
-                       "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
-                         "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
-      }
-      }
-      .handleErrorWith(
-        e => IO.pure( List.empty[Json] )
-      )
-
+    for{
+      person <- PersonQuery.getCurrentUser(userId)
+      posts <- getSqlQueryForFilter(filterType, filterGenre, sort, sortBy)
+        .query[Post]
+        .to[List]
+        .transact(xa)
+    }yield {
+      if person.nonEmpty && person.get.xxxContent == 0 then
+        posts.filter(_.xxxContent == 0).map { elem =>
+          json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
+                               "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
+                                 "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
+                                   "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
+        }
+      else
+        posts.map{ elem =>
+          json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
+                             "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
+                               "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
+                                 "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
+        }
+    }
   private def getSqlQueryForFilter(filterType:Int, filterGenre:Int, sort:Int, sortBy:Int):Fragment =
 
-      val sortColumn = Fragment.const(Sort(sort).toString)
-      val sortDirection = Fragment.const(SortBy(sortBy).toString)
+      val sortColumn = Fragment.const(SortBy.fromOrdinal(sort).field)
+      val sortDirection = Fragment.const(OrderBy.fromOrdinal(sortBy).value)
 
       val firstPat = sql"SELECT * FROM `post`"
 
@@ -129,9 +139,9 @@ object PostQuery{
       .map { posts =>
         posts.map(elem =>
           json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
-                    "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
-                      "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
-                        "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
+                               "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
+                                 "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
+                                   "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
 
         )
       }
@@ -153,7 +163,7 @@ object PostQuery{
         case Left(e) => json"""{"success":  "false"}"""
       }
 
-  def updatePostInfo(postId:Int, Post:Post):IO[Json]=
+  def updatePostInfo(postId:Int, Post:UpdatePost):IO[Json]=
 
     sql"UPDATE `post` SET title = ${Post.title}, description = ${Post.description}, year = ${Post.year}, episode_count = ${Post.episodeCount}, episode_duration = ${Post.episodeDuration}, type_id = ${Post.typeId}, xxx_content = ${Post.xxxContent}, genre_id = ${Post.genreId} WHERE id = ${Post.id}"
       .update
@@ -166,16 +176,16 @@ object PostQuery{
       }
       .handleErrorWith( e => IO.pure(json"""{"success":  "false"}"""))
 
-  def deletePost(postId:Int):IO[Json]=
+  def deletePost(postId:Int):IO[Boolean]=
     sql"DELETE FROM `post` WHERE id = $postId"
       .update
       .run
       .transact(xa)
       .attemptSql
-      .map{_ => json"""{"success": "true"}"""}
-      .handleErrorWith( e => IO.pure(json"""{"success":  "false"}"""))
-
-
+      .map {
+        case Right(_) => true
+        case Left(e) => false
+      }
 
 
 

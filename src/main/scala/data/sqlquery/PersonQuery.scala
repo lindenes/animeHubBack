@@ -21,7 +21,7 @@ object PersonQuery {
     "root",
     ",tkstudjplbrb",
   )
-  case class UserInfo(id:Int, createdAt:String, login:String, email:String, age:Int, avatarPath:String, role:Int, xxxContent:Int)
+  case class UserInfo(id:Int, createdAt:String, login:String, email:String, age:String, avatarPath:String, role:Int, xxxContent:Int)
   def getPersonInfo(login:String):Either[UserInfo, String] =
     try {
       val url = "jdbc:mysql://127.0.0.1/animeHub"
@@ -43,7 +43,7 @@ object PersonQuery {
             resultSet.getString("created_at"),
             resultSet.getString("login"),
             resultSet.getString("email"),
-            resultSet.getInt("age"),
+            resultSet.getString("age"),
             resultSet.getString("avatar_path"),
             resultSet.getInt("role"),
             resultSet.getInt("xxx_content")
@@ -74,7 +74,7 @@ object PersonQuery {
 
     getCurrentUser( personId ).flatMap { user =>
 
-      if user.nonEmpty && (user.get.role == PersonRole.Admin.id) then
+      if user.nonEmpty && (user.get.role == PersonRole.Admin.ordinal) then
 
         sql"SELECT id, created_at, login, email, age, avatar_path, role, xxx_content FROM `user`"
           .query[UserInfo]
@@ -99,7 +99,7 @@ object PersonQuery {
 
     getCurrentUser( personId ).flatMap{ user =>
 
-      if user.nonEmpty && (user.get.role == PersonRole.Admin.id) then
+      if user.nonEmpty && (user.get.role == PersonRole.Admin.ordinal) then
 
         val searchLogin = loginSearchValue + "%"
 
@@ -140,9 +140,9 @@ object PersonQuery {
       .transact(xa)
       .flatMap { rowsUpdated =>
         if rowsUpdated > 0 then
-          IO.pure(json"""{"success":  "Роль обновлена"}""")
+          IO.pure(json"""{"success":  "true"}""")
         else
-          IO.pure(json"""{"success":  "Не получилось обновить роль"}""")
+          IO.pure(json"""{"success":  "false"}""")
       }
 
 }

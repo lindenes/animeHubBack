@@ -69,9 +69,9 @@ object PlaylistQuery {
         posts.map{
           elem =>
             json"""{ "id": ${elem.id},"createdAt": ${elem.createdAt}, "title": ${elem.title},
-                  "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
-                    "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
-                      "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "genreId": ${elem.genreId} }"""
+                                 "description": ${elem.description},"year": ${elem.year}, "imagePath": ${elem.imagePath},
+                                   "videoPath": ${elem.videoPath},"episodeCount": ${elem.episodeCount}, "episodeDuration":${elem.episodeDuration},
+                                     "userId": ${elem.userId}, "typeId": ${elem.typeId}, "rating": ${elem.rating}, "xxxPostContent": ${elem.xxxContent}, "genreId": ${elem.genreId} }"""
           
         }
         

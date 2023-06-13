@@ -12,23 +12,23 @@ import org.http4s.{Request, UrlForm}
 import services.Validation
 import data.sqlquery.{CommentQuery, FiltersQuery, PersonQuery, PlaylistQuery, PostQuery, RatingQuery, ReportsQuery}
 import io.circe.syntax.*
-import data.sqlquery.PostQuery.Post
+import data.sqlquery.PostQuery.{Post, UpdatePost}
 object ServiceList {
-  case class User(login: String, password: String, passwordRepeat: String, age:Option[Int], email:String, photo:String)
+  case class User(login: String, password: String, passwordRepeat: String, age:Option[String], email:String, photo:Option[String])
+  given Decoder[User] = Decoder.forProduct6(
+    "login",
+    "password",
+    "passwordRepeat",
+    "age",
+    "email",
+    "photo",
+  )(User.apply)
 
   val validation = new Validation()
   def testMethod(): String = "Test Working"
 
   def doRegistration(req: Request[IO]): IO[Json] =
-    req.as[Json].flatMap { json =>
-      val login = json.hcursor.get[String]("login").toOption.getOrElse("")
-      val password = json.hcursor.get[String]("password").toOption.getOrElse("")
-      val passwordRepeat = json.hcursor.get[String]("passwordRepeat").toOption.getOrElse("")
-      val email = json.hcursor.get[String]("email").toOption.getOrElse("")
-      val age = json.hcursor.get[Int]("age").toOption.getOrElse(0)
-      val photo = json.hcursor.get[String]("photo").toOption.getOrElse("")
-
-      val user = User(login, password, passwordRepeat, Some(age), email, photo)
+    req.as[User].flatMap { user =>
 
       val validationInfo = validation.checkValidation(user)
       val regInfo = Registration.addNewUser(user, validationInfo._2)
@@ -61,8 +61,10 @@ object ServiceList {
       val filterGenre = json.hcursor.get[Int]("filterGenre").toOption.getOrElse(0)
       val sort = json.hcursor.get[Int]("sort").toOption.getOrElse(0)
       val sortBy = json.hcursor.get[Int]("sortBy").toOption.getOrElse(0)
+      val userId = json.hcursor.get[Int]("userId").toOption.getOrElse(0)
 
-      PostQuery.getPostList(filterType, filterGenre, sort ,sortBy).map(posts => Json.arr(posts: _*))
+
+      PostQuery.getPostList(filterType, filterGenre, sort ,sortBy, userId).map(posts => Json.arr(posts: _*))
 
     }
   def getFilters:IO[Json] = FiltersQuery.getFilterList
@@ -145,7 +147,7 @@ object ServiceList {
 
            IO.pure(
              Json.arr(
-             PersonRole.roleList.map{ role => json"""{"roleId": ${role.id}, "roleName": ${role.toString}}""" }: _*)
+             PersonRole.values.map{ role => json"""{"roleId": ${role.ordinal}, "roleName": ${role.roleName}}""" }: _*)
            )
 
          else
@@ -209,13 +211,22 @@ object ServiceList {
   def deletePost(req:Request[IO]):IO[Json]=
     req.as[Json].flatMap{ json =>
       val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
-      PostQuery.deletePost(postId)
+      (
+        PostQuery.deletePost(postId),
+        CommentQuery.delComments(postId),
+        ReportsQuery.delReports(postId)
+      ).parMapN( (post, comments, reports) =>
+          if post && comments && reports then
+            json"""{"success":  "true"}"""
+          else
+            json"""{"success":  "false"}"""
+      )
     }
 
   def updatePost(req:Request[IO]):IO[Json]=
     req.as[Json].flatMap{ json =>
       val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
-      val post = Post(
+      val post = UpdatePost(
         postId,
         "",
         json.hcursor.get[String]("title").toOption.getOrElse(""),
@@ -267,8 +278,9 @@ object ServiceList {
   def addReport(req: Request[IO]):IO[Json]=
     req.as[Json].flatMap{ json =>
       val commentId = json.hcursor.get[Int]("commentId").toOption.getOrElse(0)
+      val postId = json.hcursor.get[Int]("postId").toOption.getOrElse(0)
 
-      ReportsQuery.addReport(commentId)
+      ReportsQuery.addReport(commentId, postId)
     }
 
   def getReportList(req: Request[IO]):IO[Json]=
@@ -289,6 +301,32 @@ object ServiceList {
           json"""{"success": "false"}"""
       }
     }
+
+  def pardonReport(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap { json =>
+      val reportId = json.hcursor.get[Int]("reportId").toOption.getOrElse(0)
+
+      ReportsQuery.delReport(reportId).map( success =>
+        if (success)
+          json"""{"success": "true"}"""
+        else
+          json"""{"success": "false"}"""
+      )
+    }
+
+  def delPersonComment(req:Request[IO]):IO[Json]=
+    req.as[Json].flatMap{ json =>
+      val commentId = json.hcursor.get[Int]("commentId").toOption.getOrElse(0)
+
+      CommentQuery.delComment(commentId).map{ comment =>
+        if (comment)
+          json"""{"success": "true"}"""
+        else
+          json"""{"success": "false"}"""
+
+      }
+    }
+
 }
 
 
